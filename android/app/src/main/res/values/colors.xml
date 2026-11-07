@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Elevora Signature Palette -->
+    <color name="bg_dark_navy">#080C16</color>
+    <color name="bg_surface_slate">#131C31</color>
+    <color name="bg_card_glass">#18233C</color>
+    <color name="gold_primary">#F39C12</color>
+    <color name="gold_accent">#F1C40F</color>
+    <color name="gold_light">#FBD07A</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="text_gold">#E8BE6B</color>
+    <color name="stroke_border">#24304D</color>
+    <color name="stroke_gold_active">#F39C12</color>
+</resources>
