@@ -71,6 +71,7 @@ fun Day1RolePlayScreen(
     // Voice State
     var isListening by remember { mutableStateOf(false) }
     var spokenVoiceText by remember { mutableStateOf("") }
+    var voiceErrorMessage by remember { mutableStateOf<String?>(null) }
     var aiReply by remember { mutableStateOf<String?>(null) }
     var aiFluencyScore by remember { mutableStateOf("4.5 / 5.0") }
     var improvedVersion by remember { mutableStateOf<String?>(null) }
@@ -124,16 +125,20 @@ fun Day1RolePlayScreen(
             context = context,
             onFinalResult = { completeSentence ->
                 spokenVoiceText = completeSentence
+                voiceErrorMessage = null
                 triggerAiEvaluation(completeSentence)
             },
             onPartial = { liveSpeechDraft ->
                 spokenVoiceText = liveSpeechDraft // Update screen text in real-time without interrupting
+                voiceErrorMessage = null
             },
             onError = { errMsg ->
                 isListening = false
+                voiceErrorMessage = errMsg
             },
             onListeningStateChanged = { listening ->
                 isListening = listening
+                if (listening) voiceErrorMessage = null
             }
         )
         speechRecognizer = recognizer
@@ -411,14 +416,21 @@ fun Day1RolePlayScreen(
 
                     Text(
                         text = when {
+                            voiceErrorMessage != null -> voiceErrorMessage!!
                             isListening -> "Listening to your voice... Speak now"
-                            isEvaluating -> "Assessing your speech & fluency..."
+                            isEvaluating -> "Assessing your speech & fluency with live AI..."
                             spokenVoiceText.isNotBlank() -> "Tap mic to speak again"
                             else -> "Tap microphone to speak"
                         },
-                        color = if (isListening) Color(0xFFFCA5A5) else ElevoraColors.GoldLight,
+                        color = when {
+                            voiceErrorMessage != null -> ElevoraColors.AlertAmber
+                            isListening -> Color(0xFFFCA5A5)
+                            else -> ElevoraColors.GoldLight
+                        },
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
 
                     // What the learner spoke

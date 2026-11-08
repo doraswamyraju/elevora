@@ -79,6 +79,8 @@ class ElevoraSpeechRecognizer(
                         onListeningStateChanged(false)
                         if (recognizedText.isNotBlank()) {
                             onFinalResult(recognizedText)
+                        } else {
+                            onError("No words detected. Please speak clearly into the microphone.")
                         }
                     }
 
