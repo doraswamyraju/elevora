@@ -99,3 +99,4 @@ export const BlogSection: React.FC = () => {
     </section>
   );
 };
+

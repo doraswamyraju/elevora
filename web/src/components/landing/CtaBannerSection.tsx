@@ -45,3 +45,4 @@ export const CtaBannerSection: React.FC<CtaBannerSectionProps> = ({ onStartLearn
     </section>
   );
 };
+

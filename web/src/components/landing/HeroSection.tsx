@@ -148,3 +148,4 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onStartLearning, onWat
     </section>
   );
 };
+

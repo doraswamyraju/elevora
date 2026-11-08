@@ -165,3 +165,4 @@ export const AppPhoneMockup: React.FC<AppPhoneMockupProps> = ({ onInteract }) =>
     </div>
   );
 };
+

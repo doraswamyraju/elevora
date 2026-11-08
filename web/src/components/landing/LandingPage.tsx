@@ -71,3 +71,4 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, onLoginCli
     </div>
   );
 };
+

@@ -226,3 +226,4 @@ export const CourseDetailsSection: React.FC<CourseDetailsSectionProps> = ({ onSt
     </section>
   );
 };
+

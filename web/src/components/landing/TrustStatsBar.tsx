@@ -66,3 +66,4 @@ export const TrustStatsBar: React.FC = () => {
     </section>
   );
 };
+

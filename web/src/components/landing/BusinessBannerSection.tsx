@@ -71,3 +71,4 @@ export const BusinessBannerSection: React.FC<BusinessBannerSectionProps> = ({ on
     </section>
   );
 };
+
