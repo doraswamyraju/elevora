@@ -19,22 +19,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.elevora.app.core.designsystem.colors.ElevoraColors
 import com.elevora.app.core.designsystem.components.buttons.ElevoraPrimaryButton
-import com.elevora.app.features.learn.model.Day1FullContent
+import com.elevora.app.features.learn.model.Day1Curriculum
 
-/**
- * Screen matching Screenshot 9: Quiz – Day 1 Quiz with Radio Selection & Next/Finish
- */
 @Composable
 fun Day1QuizScreen(
     onBackClick: () -> Unit = {},
     onQuizComplete: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val content = Day1FullContent()
+    val curriculum = Day1Curriculum()
     var currentQuestionIndex by remember { mutableStateOf(0) }
     val userAnswers = remember { mutableStateMapOf<Int, Int>() }
 
-    val currentQ = content.quizQuestions[currentQuestionIndex]
+    val currentQ = curriculum.day1QuizList[currentQuestionIndex]
     val selectedOption = userAnswers[currentQuestionIndex]
 
     Column(
@@ -47,12 +44,12 @@ fun Day1QuizScreen(
         // Top Bar
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp)
         ) {
             IconButton(
                 onClick = onBackClick,
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(ElevoraColors.SlateCard)
                     .border(1.dp, ElevoraColors.CardStroke, CircleShape)
@@ -65,12 +62,20 @@ fun Day1QuizScreen(
                 )
             }
             Spacer(modifier = Modifier.width(14.dp))
-            Text(
-                text = "Quiz",
-                color = ElevoraColors.TextPrimary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
+            Column {
+                Text(
+                    text = "Step 06 • Assessment",
+                    color = ElevoraColors.GoldPrimary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Check Your Understanding",
+                    color = ElevoraColors.TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            }
         }
 
         Row(
@@ -78,40 +83,39 @@ fun Day1QuizScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                Text(
-                    text = "Day 1 Quiz",
-                    color = ElevoraColors.TextPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Answer 5 quick questions to check your understanding.",
-                    color = ElevoraColors.TextSecondary,
-                    fontSize = 13.sp
-                )
-            }
+            Text(
+                text = "Lesson 1 Quiz",
+                color = ElevoraColors.TextPrimary,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Q${currentQuestionIndex + 1} of ${curriculum.day1QuizList.size}",
+                color = ElevoraColors.GoldPrimary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        Text(
-            text = "Q${currentQuestionIndex + 1} of ${content.quizQuestions.size}",
-            color = ElevoraColors.GoldPrimary,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.End)
-        )
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        // Question Card
-        Text(
-            text = currentQ.question,
-            color = ElevoraColors.TextPrimary,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold
-        )
+        // Question Statement Card
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(ElevoraColors.MidnightSurface)
+                .border(1.dp, ElevoraColors.CardStroke, RoundedCornerShape(16.dp))
+                .padding(16.dp)
+        ) {
+            Text(
+                text = currentQ.question,
+                color = ElevoraColors.TextPrimary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                lineHeight = 22.sp
+            )
+        }
 
         Spacer(modifier = Modifier.height(18.dp))
 
@@ -128,7 +132,7 @@ fun Day1QuizScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(if (isSelected) ElevoraColors.SlateCard else ElevoraColors.DarkVoid)
+                        .background(if (isSelected) ElevoraColors.SlateCard else ElevoraColors.MidnightSurface)
                         .border(
                             1.dp,
                             if (isSelected) ElevoraColors.GoldPrimary else ElevoraColors.CardStroke,
@@ -141,7 +145,6 @@ fun Day1QuizScreen(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Radio circle indicator
                         Box(
                             modifier = Modifier
                                 .size(20.dp)
@@ -168,8 +171,9 @@ fun Day1QuizScreen(
                         Text(
                             text = optionText,
                             color = if (isSelected) ElevoraColors.TextPrimary else ElevoraColors.TextSecondary,
-                            fontSize = 14.sp,
-                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                            fontSize = 13.sp,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
@@ -178,11 +182,10 @@ fun Day1QuizScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Next or Finish Button
         ElevoraPrimaryButton(
-            text = if (currentQuestionIndex < content.quizQuestions.size - 1) "Next →" else "Finish Quiz",
+            text = if (currentQuestionIndex < curriculum.day1QuizList.size - 1) "Next Question →" else "Complete & Self-Audit",
             onClick = {
-                if (currentQuestionIndex < content.quizQuestions.size - 1) {
+                if (currentQuestionIndex < curriculum.day1QuizList.size - 1) {
                     currentQuestionIndex++
                 } else {
                     onQuizComplete()
@@ -193,4 +196,3 @@ fun Day1QuizScreen(
         Spacer(modifier = Modifier.height(10.dp))
     }
 }
-

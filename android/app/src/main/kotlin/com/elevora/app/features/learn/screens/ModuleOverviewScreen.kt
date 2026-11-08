@@ -1,5 +1,6 @@
 package com.elevora.app.features.learn.screens
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,14 +14,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.School
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -29,23 +28,41 @@ import com.elevora.app.R
 import com.elevora.app.core.designsystem.colors.ElevoraColors
 import com.elevora.app.core.designsystem.components.cards.ElevoraGlassCard
 
-data class WeekCardItem(
+data class ModuleWeekTopic(
     val weekNumber: Int,
     val title: String,
     val isCurrent: Boolean = false,
-    val isLocked: Boolean = false
+    val isLocked: Boolean = false,
+    val lessons: List<String>
 )
 
-val module1Weeks = listOf(
-    WeekCardItem(1, "Getting Started & Everyday English", isCurrent = true, isLocked = false),
-    WeekCardItem(2, "Workplace Foundations", isCurrent = false, isLocked = true),
-    WeekCardItem(3, "Meetings & Collaboration", isCurrent = false, isLocked = true),
-    WeekCardItem(4, "Professional Writing", isCurrent = false, isLocked = true)
+val allModule1Weeks = listOf(
+    ModuleWeekTopic(
+        1, "Professional Introductions & Workplace Routine",
+        isCurrent = true,
+        isLocked = false,
+        lessons = listOf("Lesson 1: Professional Introductions", "Lesson 2: Job Roles & Responsibilities", "Lesson 3: Present Simple for Work")
+    ),
+    ModuleWeekTopic(
+        2, "Past & Future Workplace Communication",
+        isCurrent = false,
+        isLocked = true,
+        lessons = listOf("Lesson 4: Past Experiences", "Lesson 5: Future Plans & Commitments", "Lesson 6: Questions & Clarification")
+    ),
+    ModuleWeekTopic(
+        3, "Workplace Foundations & Describing Situations",
+        isCurrent = false,
+        isLocked = true,
+        lessons = listOf("Lesson 7: Workplace Vocabulary", "Lesson 8: Describing People & Situations", "Lesson 9: Time, Schedules & Routines")
+    ),
+    ModuleWeekTopic(
+        4, "Grammar Accuracy & Conversational Fluency",
+        isCurrent = false,
+        isLocked = true,
+        lessons = listOf("Lesson 10: Common Grammar Errors", "Lesson 11: Confidence-Building Conversations", "Lesson 12: Module 1 Review")
+    )
 )
 
-/**
- * Screen matching Screenshot 2: Module Overview with Banner + Weeks in this Module
- */
 @Composable
 fun ModuleOverviewScreen(
     onBackClick: () -> Unit = {},
@@ -67,7 +84,7 @@ fun ModuleOverviewScreen(
             IconButton(
                 onClick = onBackClick,
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(ElevoraColors.SlateCard)
                     .border(1.dp, ElevoraColors.CardStroke, CircleShape)
@@ -80,133 +97,141 @@ fun ModuleOverviewScreen(
                 )
             }
             Spacer(modifier = Modifier.width(14.dp))
-            Text(
-                text = "Module 1",
-                color = ElevoraColors.TextPrimary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
+            Column {
+                Text(
+                    text = "Module 1",
+                    color = ElevoraColors.GoldPrimary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Building Confidence & Core Workplace English",
+                    color = ElevoraColors.TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            }
         }
 
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            // Hero Module Banner
+            // Realistic High-End Visual Boardroom Banner
             item {
                 ElevoraGlassCard(
                     modifier = Modifier.fillMaxWidth(),
-                    cornerRadius = 18.dp
+                    cornerRadius = 20.dp
                 ) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(4.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                        ) {
                             Image(
-                                painter = painterResource(id = R.drawable.elevora_logo_square),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(64.dp)
-                                    .clip(RoundedCornerShape(12.dp))
+                                painter = painterResource(id = R.drawable.module1_banner),
+                                contentDescription = "Executive Boardroom",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
                             )
-                            Spacer(modifier = Modifier.width(14.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "Module 1",
-                                    color = ElevoraColors.GoldPrimary,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "Building Confidence & Core Workplace English",
-                                    color = ElevoraColors.TextPrimary,
-                                    fontSize = 17.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        androidx.compose.ui.graphics.Brush.verticalGradient(
+                                            listOf(
+                                                androidx.compose.ui.graphics.Color.Transparent,
+                                                ElevoraColors.DeepNavy.copy(alpha = 0.9f)
+                                            )
+                                        )
+                                    )
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .padding(14.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                BadgePill(icon = "📅", text = "4 Weeks")
+                                BadgePill(icon = "📖", text = "12 Classes")
+                                BadgePill(icon = "🏆", text = "Beginner")
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = "Build the essential English skills you need for everyday workplace success.",
-                            color = ElevoraColors.TextSecondary,
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp
-                        )
-
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        // Stats pills
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            BadgePill(icon = "📅", text = "4 Weeks")
-                            BadgePill(icon = "📖", text = "12 Lessons")
-                            BadgePill(icon = "📊", text = "Beginner")
-                        }
+                        Text(
+                            text = "Build essential English skills for everyday workplace success: professional introductions, job roles, daily schedules, and clear questions.",
+                            color = ElevoraColors.TextSecondary,
+                            fontSize = 13.sp,
+                            lineHeight = 19.sp
+                        )
                     }
                 }
             }
 
-            // "Weeks in this Module" header
             item {
                 Text(
-                    text = "Weeks in this Module",
-                    color = ElevoraColors.TextPrimary,
-                    fontSize = 16.sp,
+                    text = "WEEKS IN THIS MODULE",
+                    color = ElevoraColors.TextMuted,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
 
-            // Weeks List
-            items(module1Weeks) { week ->
+            items(allModule1Weeks) { week ->
                 val isSelected = week.isCurrent
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(if (isSelected) ElevoraColors.SlateCard else ElevoraColors.DarkVoid)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(if (isSelected) ElevoraColors.SlateCard else ElevoraColors.MidnightSurface)
                         .border(
-                            width = 1.dp,
+                            width = 1.2.dp,
                             color = if (isSelected) ElevoraColors.GoldPrimary else ElevoraColors.CardStroke,
-                            shape = RoundedCornerShape(14.dp)
+                            shape = RoundedCornerShape(16.dp)
                         )
-                        .clickable(enabled = !week.isLocked) {
-                            onWeekClick(week.weekNumber)
-                        }
-                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                        .clickable(enabled = !week.isLocked) { onWeekClick(week.weekNumber) }
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (week.isLocked) {
-                            Icon(
-                                imageVector = Icons.Outlined.Lock,
-                                contentDescription = "Locked",
-                                tint = ElevoraColors.TextMuted,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        } else {
-                            Text(
-                                text = "📖",
-                                fontSize = 18.sp
-                            )
-                        }
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isSelected) ElevoraColors.GoldSubtle else ElevoraColors.SlateCardGlass)
+                                    .border(1.dp, if (isSelected) ElevoraColors.GoldPrimary else ElevoraColors.CardStroke, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (week.isLocked) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Lock,
+                                        contentDescription = "Locked",
+                                        tint = ElevoraColors.TextMuted,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                } else {
+                                    Text(text = "W${week.weekNumber}", color = ElevoraColors.GoldPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                }
+                            }
 
-                        Spacer(modifier = Modifier.width(14.dp))
+                            Spacer(modifier = Modifier.width(14.dp))
 
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "Week ${week.weekNumber}",
-                                    color = if (isSelected) ElevoraColors.GoldPrimary else ElevoraColors.TextSecondary,
-                                    fontSize = 12.sp,
+                                    color = if (isSelected) ElevoraColors.GoldPrimary else ElevoraColors.TextMuted,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = week.title,
                                     color = if (week.isLocked) ElevoraColors.TextMuted else ElevoraColors.TextPrimary,
@@ -214,19 +239,42 @@ fun ModuleOverviewScreen(
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }
+
+                            if (!week.isLocked) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = ElevoraColors.GoldPrimary,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
                         }
 
-                        if (!week.isLocked) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = null,
-                                tint = ElevoraColors.GoldPrimary,
-                                modifier = Modifier.size(20.dp)
-                            )
+                        // Lesson topics list for that week
+                        Spacer(modifier = Modifier.height(10.dp))
+                        week.lessons.forEach { lessonTitle ->
+                            Row(
+                                modifier = Modifier.padding(start = 52.dp, top = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(4.dp)
+                                        .clip(CircleShape)
+                                        .background(if (isSelected) ElevoraColors.GoldPrimary else ElevoraColors.TextMuted)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = lessonTitle,
+                                    color = ElevoraColors.TextSecondary,
+                                    fontSize = 11.sp
+                                )
+                            }
                         }
                     }
                 }
             }
+            item { Spacer(modifier = Modifier.height(20.dp)) }
         }
     }
 }
@@ -238,17 +286,16 @@ private fun BadgePill(icon: String, text: String) {
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
             .background(ElevoraColors.SlateCardGlass)
-            .border(1.dp, ElevoraColors.CardStroke, RoundedCornerShape(8.dp))
+            .border(1.dp, ElevoraColors.CardStrokeSubtle, RoundedCornerShape(8.dp))
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(text = icon, fontSize = 12.sp)
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = text,
-            color = ElevoraColors.TextSecondary,
-            fontSize = 12.sp,
+            color = ElevoraColors.TextPrimary,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Medium
         )
     }
 }
-

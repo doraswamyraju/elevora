@@ -1,45 +1,5 @@
 package com.elevora.app.features.learn.model
 
-data class CourseModule(
-    val id: Int,
-    val title: String,
-    val description: String,
-    val totalWeeks: Int = 4,
-    val totalLessons: Int = 12,
-    val level: String = "Beginner",
-    val completedLessons: Int = 3
-)
-
-data class WeekPlan(
-    val weekNumber: Int,
-    val title: String,
-    val isCurrent: Boolean = false,
-    val isLocked: Boolean = false,
-    val days: List<DayLessonSummary>
-)
-
-data class DayLessonSummary(
-    val dayNumber: Int,
-    val title: String,
-    val isLocked: Boolean = false,
-    val isCompleted: Boolean = false,
-    val progressPercent: Int = 0
-)
-
-data class LessonStepItem(
-    val id: String,
-    val title: String,
-    val subtitle: String,
-    val durationText: String,
-    val isCompleted: Boolean = false,
-    val isCurrent: Boolean = false
-)
-
-data class KeyExpression(
-    val phrase: String,
-    val audioUrl: String? = null
-)
-
 data class FillInBlankQuestion(
     val id: Int,
     val promptBefore: String,
@@ -55,102 +15,111 @@ data class QuizQuestion(
     val correctIndex: Int
 )
 
-data class Day1FullContent(
+data class TargetWord(
+    val word: String,
+    val definition: String,
+    val example: String
+)
+
+data class Day1Curriculum(
     val moduleNumber: Int = 1,
+    val moduleTitle: String = "Building Confidence & Core Workplace English",
     val weekNumber: Int = 1,
-    val dayNumber: Int = 1,
-    val title: String = "Introduction & Goals",
-    val subtitle: String = "Welcome to Elevora! Today, you'll understand the course, set your goals and learn key expressions.",
-    val videoTitle: String = "Course Overview & Learning Goals",
-    val videoDuration: String = "5:14",
-    val overviewPoints: List<String> = listOf(
-        "Understand what you will learn in Module 1",
-        "Know how the 4-week plan works (3 classes per week)",
-        "Set your personal learning goals & targets",
-        "Learn and pronounce key expressions for getting started"
+    val classNumber: Int = 1,
+    val lessonTitle: String = "Professional Introductions",
+    val videoDuration: String = "05:24",
+    val objectives: List<String> = listOf(
+        "Use English confidently for professional introductions.",
+        "Apply the target language in a realistic managerial situation.",
+        "Speak clearly for 2–5 minutes with reduced hesitation."
     ),
-    val keyExpressions: List<String> = listOf(
-        "I'm looking forward to learning.",
-        "This course will help me at work.",
-        "My goal is to improve my professional communication.",
-        "I want to be more confident in meetings.",
-        "I can practise a little every day."
+    val wordsForWork: List<TargetWord> = listOf(
+        TargetWord("role", "The position or purpose that someone has in an organization", "My role involves coordinating cross-functional deliveries."),
+        TargetWord("department", "A division of a company dealing with a specific functional area", "I lead the Operations department at our regional hub."),
+        TargetWord("experience", "Practical knowledge or skill gained from working in a field over time", "I have over eight years of experience in supply chain."),
+        TargetWord("responsibility", "A duty or obligation to deal with something or oversee people", "My main responsibility is ensuring on-time project execution."),
+        TargetWord("position", "A formal job post or rank within an organizational hierarchy", "She accepted the Senior Product Lead position."),
+        TargetWord("team", "A group of professionals collaborating to achieve common targets", "Our team consists of twelve skilled software engineers."),
+        TargetWord("background", "A person's professional history, education, and past track record", "My background is primarily in industrial engineering."),
+        TargetWord("objective", "A specific measurable goal or milestone you want to reach", "Our primary objective this quarter is increasing retention.")
     ),
-    val speakRepeatSentence: String = "I'm looking forward to learning.",
-    val quickActivityQuestions: List<FillInBlankQuestion> = listOf(
-        FillInBlankQuestion(
-            id = 1,
-            promptBefore = "My goal is to ",
-            promptAfter = " my communication skills.",
-            options = listOf("improve", "moves", "change"),
-            correctAnswer = "improve"
-        ),
-        FillInBlankQuestion(
-            id = 2,
-            promptBefore = "I'm ",
-            promptAfter = " forward to learning.",
-            options = listOf("look", "looking", "looked"),
-            correctAnswer = "looking"
-        ),
-        FillInBlankQuestion(
-            id = 3,
-            promptBefore = "This course will ",
-            promptAfter = " me at work.",
-            options = listOf("help", "helps", "helping"),
-            correctAnswer = "help"
-        )
+    val languageFocusRules: List<String> = listOf(
+        "Use short, clear sentences instead of complicated clauses.",
+        "Choose the correct tense (Present Simple for daily routines and duties).",
+        "Ask follow-up questions to keep managerial conversations active.",
+        "Avoid translating word-for-word from your native language."
     ),
-    val quizQuestions: List<QuizQuestion> = listOf(
+    val sayItPhrases: List<String> = listOf(
+        "Let me explain that clearly.",
+        "Could you please clarify that?",
+        "My main responsibility is…",
+        "The priority is…",
+        "Let’s look at the best solution.",
+        "I’d like to make sure we agree on the next step."
+    ),
+    val fillInBlankExercises: List<FillInBlankQuestion> = listOf(
+        FillInBlankQuestion(1, "My main ", " is leading the regional sales department.", listOf("responsibility", "department", "background"), "responsibility"),
+        FillInBlankQuestion(2, "Could you please ", " that project deadline?", listOf("clarify", "look", "position"), "clarify"),
+        FillInBlankQuestion(3, "Our primary ", " this quarter is client retention.", listOf("objective", "team", "role"), "objective"),
+        FillInBlankQuestion(4, "My professional ", " is in civil and mechanical engineering.", listOf("background", "sentence", "repeat"), "background"),
+        FillInBlankQuestion(5, "Let me ", " that clearly for the leadership team.", listOf("explain", "manage", "hesitate"), "explain")
+    ),
+    val day1QuizList: List<QuizQuestion> = listOf(
         QuizQuestion(
             id = 1,
-            question = "What is the main goal of Module 1?",
+            question = "Which sentence uses the target word 'responsibility' correctly?",
             options = listOf(
-                "To improve professional English communication",
-                "To learn advanced grammar only",
-                "To prepare for a written school exam",
-                "To write long academic reports"
+                "My main responsibility is overseeing cross-functional projects.",
+                "I have responsibility my breakfast every morning.",
+                "The responsibility car was delayed on the highway.",
+                "He responsibled to the vice president yesterday."
             ),
             correctIndex = 0
         ),
         QuizQuestion(
             id = 2,
-            question = "How many classes are planned per week?",
-            options = listOf("1 class", "3 classes", "5 classes", "7 classes"),
-            correctIndex = 1
+            question = "When you did not understand a colleague's explanation, what is the best phrase to use?",
+            options = listOf(
+                "Could you please clarify that?",
+                "What are you saying right now?",
+                "Stop talking and change the topic.",
+                "I do not want to listen."
+            ),
+            correctIndex = 0
         ),
         QuizQuestion(
             id = 3,
-            question = "Which phrase is used to start your professional introduction?",
+            question = "What is the recommended core rule from the Language Focus section?",
             options = listOf(
-                "My main responsibility is...",
-                "I am leaving early today.",
-                "Let us cancel the agenda.",
-                "None of the above"
+                "Use short, clear sentences and avoid word-for-word translation.",
+                "Speak as fast as possible without pauses.",
+                "Always translate every single word from your native language.",
+                "Only speak in single words."
             ),
             correctIndex = 0
         ),
         QuizQuestion(
             id = 4,
-            question = "What should you do after every lesson according to the Learner Book?",
+            question = "In the Managerial Introduction role-play, the manager must:",
             options = listOf(
-                "Complete the self-reflection and personal goal",
-                "Close the app and forget it",
-                "Only speak in your native language",
-                "Memorize the entire dictionary"
+                "Explain the situation, ask at least 3 questions, and agree on a next step.",
+                "Give a 60-minute uninterrupted speech.",
+                "Ask no questions and leave immediately.",
+                "Only read bullet points silently."
             ),
             correctIndex = 0
         ),
         QuizQuestion(
             id = 5,
-            question = "What is the core speaking approach in Elevora?",
+            question = "Which phrase helps align both parties at the end of a managerial discussion?",
             options = listOf(
-                "Speaking-first, practical, and workplace-relevant",
-                "Grammar-translation test method",
-                "Passive listening without speaking",
-                "Silent reading only"
+                "I’d like to make sure we agree on the next step.",
+                "Let us cancel all future meetings.",
+                "I will forget what we discussed.",
+                "None of the above."
             ),
             correctIndex = 0
         )
-    )
+    ),
+    val rolePlayPrompt: String = "Manager & Colleague Scenario: Introduce yourself, explain your department & main responsibility, ask 3 follow-up questions, and agree on the next step."
 )
-

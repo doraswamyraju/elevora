@@ -32,13 +32,14 @@ import com.elevora.app.features.courses.CourseCatalogueScreen
 import com.elevora.app.features.home.HomeScreen
 import com.elevora.app.features.learn.LearningPathScreen
 import com.elevora.app.features.learn.screens.Day1CompletedScreen
+import com.elevora.app.features.learn.screens.Day1ControlledPracticeScreen
 import com.elevora.app.features.learn.screens.Day1HubScreen
-import com.elevora.app.features.learn.screens.Day1KeyExpressionsScreen
+import com.elevora.app.features.learn.screens.Day1LanguageFocusScreen
 import com.elevora.app.features.learn.screens.Day1LessonVideoScreen
-import com.elevora.app.features.learn.screens.Day1QuickActivityScreen
 import com.elevora.app.features.learn.screens.Day1QuizScreen
-import com.elevora.app.features.learn.screens.Day1SpeakRepeatScreen
+import com.elevora.app.features.learn.screens.Day1RolePlayScreen
 import com.elevora.app.features.learn.screens.Day1StepType
+import com.elevora.app.features.learn.screens.Day1WordsForWorkScreen
 import com.elevora.app.features.learn.screens.ModuleOverviewScreen
 import com.elevora.app.features.learn.screens.ModuleWeekScreen
 import com.elevora.app.features.practice.speaking.SpeakingPracticeScreen
@@ -51,16 +52,17 @@ enum class AppDestination {
     REGISTER,
     MAIN_TABS,
     PROFILE_SETTINGS,
-    // New Course Module Flow matching target mockups
+    // Exact Course Curriculum Flow
     MODULE_OVERVIEW,
     MODULE_WEEK,
     DAY_HUB,
-    DAY_STEP_LESSON,
-    DAY_STEP_LEARN,
-    DAY_STEP_PRACTICE,
-    DAY_STEP_APPLY,
-    DAY_STEP_QUIZ,
-    DAY_COMPLETED
+    STEP_01_VIDEO,
+    STEP_02_WORDS,
+    STEP_03_LANGUAGE_FOCUS,
+    STEP_04_PRACTICE,
+    STEP_05_ROLEPLAY,
+    STEP_06_QUIZ,
+    STEP_07_COMPLETED
 }
 
 class MainActivity : ComponentActivity() {
@@ -84,18 +86,18 @@ fun ElevoraAppRoot() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
-    // Handle back button on hardware/gesture navigation
     BackHandler(enabled = drawerState.isOpen || destination != AppDestination.MAIN_TABS || currentTab != BottomTab.HOME) {
         if (drawerState.isOpen) {
             coroutineScope.launch { drawerState.close() }
         } else {
             when (destination) {
-                AppDestination.DAY_COMPLETED -> destination = AppDestination.MODULE_WEEK
-                AppDestination.DAY_STEP_QUIZ -> destination = AppDestination.DAY_STEP_APPLY
-                AppDestination.DAY_STEP_APPLY -> destination = AppDestination.DAY_STEP_PRACTICE
-                AppDestination.DAY_STEP_PRACTICE -> destination = AppDestination.DAY_STEP_LEARN
-                AppDestination.DAY_STEP_LEARN -> destination = AppDestination.DAY_STEP_LESSON
-                AppDestination.DAY_STEP_LESSON -> destination = AppDestination.DAY_HUB
+                AppDestination.STEP_07_COMPLETED -> destination = AppDestination.MODULE_WEEK
+                AppDestination.STEP_06_QUIZ -> destination = AppDestination.STEP_05_ROLEPLAY
+                AppDestination.STEP_05_ROLEPLAY -> destination = AppDestination.STEP_04_PRACTICE
+                AppDestination.STEP_04_PRACTICE -> destination = AppDestination.STEP_03_LANGUAGE_FOCUS
+                AppDestination.STEP_03_LANGUAGE_FOCUS -> destination = AppDestination.STEP_02_WORDS
+                AppDestination.STEP_02_WORDS -> destination = AppDestination.STEP_01_VIDEO
+                AppDestination.STEP_01_VIDEO -> destination = AppDestination.DAY_HUB
                 AppDestination.DAY_HUB -> destination = AppDestination.MODULE_WEEK
                 AppDestination.MODULE_WEEK -> destination = AppDestination.MODULE_OVERVIEW
                 AppDestination.MODULE_OVERVIEW -> {
@@ -160,9 +162,7 @@ fun ElevoraAppRoot() {
             }
         }
 
-        // --- COURSE MODULE STEP FLOW (MATCHING TARGET MOCKUPS) ---
-
-        // Screen 2: Module 1 Overview with banner and weeks list
+        // --- MODULE 1 CURRICULUM FLOW ---
         AppDestination.MODULE_OVERVIEW -> {
             ModuleOverviewScreen(
                 onBackClick = {
@@ -173,7 +173,6 @@ fun ElevoraAppRoot() {
             )
         }
 
-        // Screen 3: Module 1 - Week 1 with day lessons list
         AppDestination.MODULE_WEEK -> {
             ModuleWeekScreen(
                 onBackClick = { destination = AppDestination.MODULE_OVERVIEW },
@@ -183,71 +182,72 @@ fun ElevoraAppRoot() {
             )
         }
 
-        // Screen 4: Module 1 - Week 1 - Day 1 Hub with 5 steps
         AppDestination.DAY_HUB -> {
             Day1HubScreen(
                 onBackClick = { destination = AppDestination.MODULE_WEEK },
                 onStepClick = { stepType ->
                     destination = when (stepType) {
-                        Day1StepType.LESSON_VIDEO -> AppDestination.DAY_STEP_LESSON
-                        Day1StepType.LEARN_EXPRESSIONS -> AppDestination.DAY_STEP_LEARN
-                        Day1StepType.PRACTICE_SPEAK -> AppDestination.DAY_STEP_PRACTICE
-                        Day1StepType.APPLY_ACTIVITY -> AppDestination.DAY_STEP_APPLY
-                        Day1StepType.QUIZ -> AppDestination.DAY_STEP_QUIZ
+                        Day1StepType.LESSON_VIDEO -> AppDestination.STEP_01_VIDEO
+                        Day1StepType.WORDS_FOR_WORK -> AppDestination.STEP_02_WORDS
+                        Day1StepType.LANGUAGE_FOCUS_SAY_IT -> AppDestination.STEP_03_LANGUAGE_FOCUS
+                        Day1StepType.CONTROLLED_PRACTICE -> AppDestination.STEP_04_PRACTICE
+                        Day1StepType.ROLE_PLAY -> AppDestination.STEP_05_ROLEPLAY
+                        Day1StepType.QUIZ -> AppDestination.STEP_06_QUIZ
+                        Day1StepType.REFLECTION -> AppDestination.STEP_07_COMPLETED
                     }
                 }
             )
         }
 
-        // Screen 5: Lesson Video Player + Overview/Transcript/Notes tabs
-        AppDestination.DAY_STEP_LESSON -> {
+        AppDestination.STEP_01_VIDEO -> {
             Day1LessonVideoScreen(
                 onBackClick = { destination = AppDestination.DAY_HUB },
-                onNextLesson = { destination = AppDestination.DAY_STEP_LEARN }
+                onNextLesson = { destination = AppDestination.STEP_02_WORDS }
             )
         }
 
-        // Screen 6: Learn - Key Expressions
-        AppDestination.DAY_STEP_LEARN -> {
-            Day1KeyExpressionsScreen(
+        AppDestination.STEP_02_WORDS -> {
+            Day1WordsForWorkScreen(
                 onBackClick = { destination = AppDestination.DAY_HUB },
-                onContinueClick = { destination = AppDestination.DAY_STEP_PRACTICE }
+                onContinueClick = { destination = AppDestination.STEP_03_LANGUAGE_FOCUS }
             )
         }
 
-        // Screen 7: Practice - Speak & Repeat with Soundwave
-        AppDestination.DAY_STEP_PRACTICE -> {
-            Day1SpeakRepeatScreen(
+        AppDestination.STEP_03_LANGUAGE_FOCUS -> {
+            Day1LanguageFocusScreen(
                 onBackClick = { destination = AppDestination.DAY_HUB },
-                onContinueClick = { destination = AppDestination.DAY_STEP_APPLY }
+                onContinueClick = { destination = AppDestination.STEP_04_PRACTICE }
             )
         }
 
-        // Screen 8: Apply - Quick Activity (Fill in the blanks)
-        AppDestination.DAY_STEP_APPLY -> {
-            Day1QuickActivityScreen(
+        AppDestination.STEP_04_PRACTICE -> {
+            Day1ControlledPracticeScreen(
                 onBackClick = { destination = AppDestination.DAY_HUB },
-                onCheckAnswers = { destination = AppDestination.DAY_STEP_QUIZ }
+                onContinueClick = { destination = AppDestination.STEP_05_ROLEPLAY }
             )
         }
 
-        // Screen 9: Quiz - Day 1 Quiz
-        AppDestination.DAY_STEP_QUIZ -> {
+        AppDestination.STEP_05_ROLEPLAY -> {
+            Day1RolePlayScreen(
+                onBackClick = { destination = AppDestination.DAY_HUB },
+                onContinueClick = { destination = AppDestination.STEP_06_QUIZ }
+            )
+        }
+
+        AppDestination.STEP_06_QUIZ -> {
             Day1QuizScreen(
                 onBackClick = { destination = AppDestination.DAY_HUB },
-                onQuizComplete = { destination = AppDestination.DAY_COMPLETED }
+                onQuizComplete = { destination = AppDestination.STEP_07_COMPLETED }
             )
         }
 
-        // Screen 10: Day 1 Completed Celebration!
-        AppDestination.DAY_COMPLETED -> {
+        AppDestination.STEP_07_COMPLETED -> {
             Day1CompletedScreen(
                 onContinueToDay2 = { destination = AppDestination.MODULE_WEEK },
                 onBackToWeek1 = { destination = AppDestination.MODULE_WEEK }
             )
         }
 
-        // Main Tab Shell
         AppDestination.MAIN_TABS -> {
             ModalNavigationDrawer(
                 drawerState = drawerState,

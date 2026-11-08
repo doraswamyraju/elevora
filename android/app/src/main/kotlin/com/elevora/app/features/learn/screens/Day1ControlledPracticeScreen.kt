@@ -15,30 +15,27 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.elevora.app.core.designsystem.colors.ElevoraColors
 import com.elevora.app.core.designsystem.components.buttons.ElevoraPrimaryButton
-import com.elevora.app.features.learn.model.Day1FullContent
+import com.elevora.app.features.learn.model.Day1Curriculum
 
-/**
- * Screen matching Screenshot 8: Apply – Quick Activity (Fill in the blanks with pills)
- */
 @Composable
-fun Day1QuickActivityScreen(
+fun Day1ControlledPracticeScreen(
     onBackClick: () -> Unit = {},
-    onCheckAnswers: () -> Unit = {},
+    onContinueClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val content = Day1FullContent()
-    // Map of question id to chosen option
-    val selectedAnswers = remember {
+    val curriculum = Day1Curriculum()
+    val selectedPills = remember {
         mutableStateMapOf(
-            1 to "improve",
-            2 to "looking",
-            3 to "help"
+            1 to "responsibility",
+            2 to "clarify",
+            3 to "objective",
+            4 to "background",
+            5 to "explain"
         )
     }
 
@@ -52,12 +49,12 @@ fun Day1QuickActivityScreen(
         // Top Bar
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp)
         ) {
             IconButton(
                 onClick = onBackClick,
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(ElevoraColors.SlateCard)
                     .border(1.dp, ElevoraColors.CardStroke, CircleShape)
@@ -70,89 +67,99 @@ fun Day1QuickActivityScreen(
                 )
             }
             Spacer(modifier = Modifier.width(14.dp))
-            Text(
-                text = "Apply",
-                color = ElevoraColors.TextPrimary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
+            Column {
+                Text(
+                    text = "Step 04 • Practice",
+                    color = ElevoraColors.GoldPrimary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Controlled Practice",
+                    color = ElevoraColors.TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            }
         }
 
         Text(
-            text = "Quick Activity",
+            text = "Apply Target Vocabulary & Structures",
             color = ElevoraColors.TextPrimary,
-            fontSize = 18.sp,
+            fontSize = 17.sp,
             fontWeight = FontWeight.Bold
         )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
         Text(
-            text = "Complete the sentences with the right words.",
+            text = "Complete each sentence by tapping the correct target vocabulary word.",
             color = ElevoraColors.TextSecondary,
-            fontSize = 13.sp
+            fontSize = 12.sp,
+            modifier = Modifier.padding(top = 2.dp, bottom = 16.dp)
         )
-
-        Spacer(modifier = Modifier.height(20.dp))
 
         LazyColumn(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            itemsIndexed(content.quickActivityQuestions) { index, q ->
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    // Question text with blank
-                    val currentSelected = selectedAnswers[q.id] ?: "_____"
+            itemsIndexed(curriculum.fillInBlankExercises) { index, item ->
+                val currentWord = selectedPills[item.id] ?: "_____"
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(ElevoraColors.MidnightSurface)
+                        .border(1.dp, ElevoraColors.CardStroke, RoundedCornerShape(14.dp))
+                        .padding(14.dp)
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "${index + 1}. ${q.promptBefore}",
+                            text = "${index + 1}. ${item.promptBefore}",
                             color = ElevoraColors.TextPrimary,
-                            fontSize = 14.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
-                            text = currentSelected,
+                            text = currentWord,
                             color = ElevoraColors.GoldPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = q.promptAfter,
+                            text = item.promptAfter,
                             color = ElevoraColors.TextPrimary,
-                            fontSize = 14.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Medium
                         )
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Option pills
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        q.options.forEach { option ->
-                            val isSelected = selectedAnswers[q.id] == option
+                        item.options.forEach { opt ->
+                            val isSelected = selectedPills[item.id] == opt
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(20.dp))
+                                    .clip(RoundedCornerShape(16.dp))
                                     .background(if (isSelected) ElevoraColors.GoldPrimary else ElevoraColors.SlateCard)
                                     .border(
                                         1.dp,
                                         if (isSelected) ElevoraColors.GoldPrimary else ElevoraColors.CardStroke,
-                                        RoundedCornerShape(20.dp)
+                                        RoundedCornerShape(16.dp)
                                     )
-                                    .clickable { selectedAnswers[q.id] = option }
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                    .clickable { selectedPills[item.id] = opt }
+                                    .padding(horizontal = 14.dp, vertical = 6.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = option,
+                                    text = opt,
                                     color = if (isSelected) ElevoraColors.DeepNavy else ElevoraColors.TextPrimary,
-                                    fontSize = 13.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                 )
                             }
@@ -162,14 +169,13 @@ fun Day1QuickActivityScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         ElevoraPrimaryButton(
-            text = "Check Answers & Start Quiz",
-            onClick = onCheckAnswers
+            text = "Next: Role-Play Area (AI & Non-AI)",
+            onClick = onContinueClick
         )
 
         Spacer(modifier = Modifier.height(10.dp))
     }
 }
-

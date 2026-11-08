@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,25 +25,22 @@ import androidx.compose.ui.unit.sp
 import com.elevora.app.R
 import com.elevora.app.core.designsystem.colors.ElevoraColors
 import com.elevora.app.core.designsystem.components.buttons.ElevoraPrimaryButton
-import com.elevora.app.features.learn.model.Day1FullContent
+import com.elevora.app.features.learn.model.Day1Curriculum
 
-enum class LessonTab {
-    OVERVIEW,
-    TRANSCRIPT,
-    NOTES
+enum class VideoTab {
+    OBJECTIVES,
+    WARM_UP,
+    TRAINER_NOTES
 }
 
-/**
- * Screen matching Screenshot 5: Lesson Video Player + Overview/Transcript/Notes tabs + Next Lesson Button
- */
 @Composable
 fun Day1LessonVideoScreen(
     onBackClick: () -> Unit = {},
     onNextLesson: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val content = Day1FullContent()
-    var selectedTab by remember { mutableStateOf(LessonTab.OVERVIEW) }
+    val curriculum = Day1Curriculum()
+    var selectedTab by remember { mutableStateOf(VideoTab.OBJECTIVES) }
     var isPlaying by remember { mutableStateOf(false) }
 
     Column(
@@ -61,7 +59,7 @@ fun Day1LessonVideoScreen(
             IconButton(
                 onClick = onBackClick,
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(ElevoraColors.SlateCard)
                     .border(1.dp, ElevoraColors.CardStroke, CircleShape)
@@ -74,53 +72,58 @@ fun Day1LessonVideoScreen(
                 )
             }
             Spacer(modifier = Modifier.width(14.dp))
-            Text(
-                text = "Lesson",
-                color = ElevoraColors.TextPrimary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
+            Column {
+                Text(
+                    text = "Step 01 • Lesson Video",
+                    color = ElevoraColors.GoldPrimary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = curriculum.lessonTitle,
+                    color = ElevoraColors.TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            }
         }
 
-        // Mock Video Player Card
+        // Executive Video Player Card with Trainer Visual
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(ElevoraColors.MidnightSurface)
-                .border(1.dp, ElevoraColors.CardStroke, RoundedCornerShape(16.dp)),
+                .height(210.dp)
+                .clip(RoundedCornerShape(18.dp))
+                .border(1.2.dp, ElevoraColors.GoldPrimary.copy(alpha = 0.4f), RoundedCornerShape(18.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+            Image(
+                painter = painterResource(id = R.drawable.trainer_priya_banner),
+                contentDescription = "Executive Trainer Video",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(ElevoraColors.DeepNavy.copy(alpha = 0.5f))
+            )
+
+            // Play Button with Gold Ripple Animation
+            Box(
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(CircleShape)
+                    .background(ElevoraColors.GoldPrimary)
+                    .clickable { isPlaying = !isPlaying },
+                contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.elevora_logo_square),
-                    contentDescription = "Trainer Video",
-                    modifier = Modifier
-                        .size(68.dp)
-                        .clip(CircleShape)
-                        .border(2.dp, ElevoraColors.GoldPrimary, CircleShape)
+                Icon(
+                    imageVector = Icons.Filled.PlayArrow,
+                    contentDescription = "Play",
+                    tint = ElevoraColors.DeepNavy,
+                    modifier = Modifier.size(36.dp)
                 )
-                Spacer(modifier = Modifier.height(10.dp))
-                // Play button overlay
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(ElevoraColors.GoldPrimary)
-                        .clickable { isPlaying = !isPlaying },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.PlayArrow,
-                        contentDescription = "Play Video",
-                        tint = ElevoraColors.DeepNavy,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
             }
 
             // Duration Pill
@@ -129,35 +132,36 @@ fun Day1LessonVideoScreen(
                     .align(Alignment.BottomStart)
                     .padding(12.dp)
                     .clip(RoundedCornerShape(6.dp))
-                    .background(ElevoraColors.DeepNavy.copy(alpha = 0.8f))
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .background(ElevoraColors.DeepNavy.copy(alpha = 0.85f))
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "0:00 / ${content.videoDuration}",
-                    color = ElevoraColors.TextSecondary,
-                    fontSize = 11.sp
+                    text = if (isPlaying) "Playing: 01:24 / ${curriculum.videoDuration}" else "00:00 / ${curriculum.videoDuration}",
+                    color = ElevoraColors.GoldPrimary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
-        // Tabs: Overview | Transcript | Notes
+        // Tabs: Objectives | Warm-up | Trainer Notes
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             listOf(
-                LessonTab.OVERVIEW to "Overview",
-                LessonTab.TRANSCRIPT to "Transcript",
-                LessonTab.NOTES to "Notes"
+                VideoTab.OBJECTIVES to "Objectives",
+                VideoTab.WARM_UP to "5-Min Warm-up",
+                VideoTab.TRAINER_NOTES to "Trainer Notes"
             ).forEach { (tab, label) ->
                 val isSelected = selectedTab == tab
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (isSelected) ElevoraColors.SlateCard else ElevoraColors.DarkVoid)
+                        .background(if (isSelected) ElevoraColors.SlateCard else ElevoraColors.MidnightSurface)
                         .border(
                             1.dp,
                             if (isSelected) ElevoraColors.GoldPrimary else ElevoraColors.CardStroke,
@@ -170,80 +174,60 @@ fun Day1LessonVideoScreen(
                     Text(
                         text = label,
                         color = if (isSelected) ElevoraColors.GoldPrimary else ElevoraColors.TextSecondary,
-                        fontSize = 13.sp,
+                        fontSize = 12.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
-        // Tab Content
         when (selectedTab) {
-            LessonTab.OVERVIEW -> {
+            VideoTab.OBJECTIVES -> {
                 Text(
-                    text = content.videoTitle,
-                    color = ElevoraColors.TextPrimary,
-                    fontSize = 17.sp,
+                    text = "Today I will be able to…",
+                    color = ElevoraColors.GoldPrimary,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Text(
-                    text = "In this lesson, we will:",
-                    color = ElevoraColors.TextSecondary,
-                    fontSize = 13.sp
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                content.overviewPoints.forEach { point ->
+                Spacer(modifier = Modifier.height(8.dp))
+                curriculum.objectives.forEach { obj ->
                     Row(
                         modifier = Modifier.padding(vertical = 4.dp),
                         verticalAlignment = Alignment.Top
                     ) {
-                        Text(
-                            text = "• ",
-                            color = ElevoraColors.GoldPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = point,
-                            color = ElevoraColors.TextPrimary,
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp
-                        )
+                        Text(text = "• ", color = ElevoraColors.GoldPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(text = obj, color = ElevoraColors.TextPrimary, fontSize = 13.sp, lineHeight = 19.sp)
                     }
                 }
             }
-            LessonTab.TRANSCRIPT -> {
+            VideoTab.WARM_UP -> {
                 Text(
-                    text = "Full Lesson Transcript",
-                    color = ElevoraColors.TextPrimary,
+                    text = "5-Min Warm-up: Answer using complete sentences",
+                    color = ElevoraColors.GoldPrimary,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Welcome to the Managerial English Development Programme. Over the next 24 weeks and 6 modules, our goal is to help you speak confidently, accurately, and naturally in workplace scenarios. Today in Day 1, we focus on setting personal goals and practicing core introductory phrases. Remember: do not aim for perfect English, aim for clear, professional English.",
-                    color = ElevoraColors.TextSecondary,
-                    fontSize = 13.sp,
-                    lineHeight = 20.sp
-                )
+                listOf(
+                    "1. What is your current role and department?",
+                    "2. How many people are on your direct team?",
+                    "3. What is one major objective you are working on this week?"
+                ).forEach { q ->
+                    Text(text = q, color = ElevoraColors.TextPrimary, fontSize = 13.sp, modifier = Modifier.padding(vertical = 4.dp))
+                }
             }
-            LessonTab.NOTES -> {
+            VideoTab.TRAINER_NOTES -> {
                 Text(
-                    text = "Trainer Tips & Takeaways",
-                    color = ElevoraColors.TextPrimary,
+                    text = "Trainer Guidance (From Trainer Guide)",
+                    color = ElevoraColors.GoldPrimary,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "1. Keep a personal notebook of 10-15 high-value words per week.\n2. Record yourself speaking for 2-5 minutes at least three times a week.\n3. Always complete the lesson self-reflection.",
+                    text = "Target learner: A working manager with basic-to-intermediate English who needs greater accuracy, confidence, and fluency.\n\nCore approach: Speaking-first, practical, and connected to your real workplace. Do not aim for perfect grammar; aim for clear, assertive executive communication.",
                     color = ElevoraColors.TextSecondary,
                     fontSize = 13.sp,
                     lineHeight = 20.sp
@@ -251,15 +235,13 @@ fun Day1LessonVideoScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(28.dp))
 
-        // Next Lesson Button
         ElevoraPrimaryButton(
-            text = "Next: Key Expressions",
+            text = "Next: Words for Work (8 Words)",
             onClick = onNextLesson
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(14.dp))
     }
 }
-

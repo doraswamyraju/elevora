@@ -18,32 +18,42 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.elevora.app.core.designsystem.colors.ElevoraColors
 
-data class DayItem(
+data class WeekDayLesson(
     val dayNumber: Int,
     val title: String,
-    val isCompleted: Boolean = false,
+    val subtitle: String,
     val isCurrent: Boolean = false,
     val isLocked: Boolean = false,
     val progressPercent: Int = 0
 )
 
-val week1Days = listOf(
-    DayItem(1, "Introduction & Goals", isCurrent = true, progressPercent = 0),
-    DayItem(2, "Professional Introductions", isLocked = true),
-    DayItem(3, "Talking About Your Work", isLocked = true),
-    DayItem(4, "Workplace Vocabulary (Part 1)", isLocked = true),
-    DayItem(5, "Small Talk at Work", isLocked = true)
+val week1ActualDays = listOf(
+    WeekDayLesson(
+        dayNumber = 1,
+        title = "Professional Introductions",
+        subtitle = "Role, department, experience, responsibility & opening phrases",
+        isCurrent = true,
+        progressPercent = 0
+    ),
+    WeekDayLesson(
+        dayNumber = 2,
+        title = "Job Roles & Responsibilities",
+        subtitle = "Manage, supervise, coordinate, oversee & reporting structures",
+        isLocked = true
+    ),
+    WeekDayLesson(
+        dayNumber = 3,
+        title = "Present Simple for Work",
+        subtitle = "Daily managerial routines, schedules, monitoring & reviews",
+        isLocked = true
+    )
 )
 
-/**
- * Screen matching Screenshot 3: Module 1 - Week 1 with Week tab pills + Day 1-5 list
- */
 @Composable
 fun ModuleWeekScreen(
     onBackClick: () -> Unit = {},
@@ -67,7 +77,7 @@ fun ModuleWeekScreen(
             IconButton(
                 onClick = onBackClick,
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(ElevoraColors.SlateCard)
                     .border(1.dp, ElevoraColors.CardStroke, CircleShape)
@@ -80,12 +90,20 @@ fun ModuleWeekScreen(
                 )
             }
             Spacer(modifier = Modifier.width(14.dp))
-            Text(
-                text = "Module 1 – Week $selectedWeek",
-                color = ElevoraColors.TextPrimary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
+            Column {
+                Text(
+                    text = "Module 1 • 3 Classes per Week",
+                    color = ElevoraColors.GoldPrimary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Week $selectedWeek: Professional Introductions",
+                    color = ElevoraColors.TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            }
         }
 
         // Horizontal Week Tabs (Week 1, Week 2, Week 3, Week 4)
@@ -106,7 +124,7 @@ fun ModuleWeekScreen(
                             RoundedCornerShape(20.dp)
                         )
                         .clickable { selectedWeek = weekNum }
-                        .padding(vertical = 8.dp),
+                        .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -119,50 +137,47 @@ fun ModuleWeekScreen(
             }
         }
 
-        // Section Title
         Text(
-            text = "Week $selectedWeek",
-            color = ElevoraColors.TextPrimary,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
+            text = "CLASSES IN WEEK $selectedWeek",
+            color = ElevoraColors.TextMuted,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
         )
         Text(
-            text = "Getting Started & Everyday English",
+            text = "Weekly routine: Class 1 = Learn | Class 2 = Practise | Class 3 = Apply",
             color = ElevoraColors.TextSecondary,
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             modifier = Modifier.padding(top = 2.dp, bottom = 16.dp)
         )
 
         // Day Lessons List
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            items(week1Days) { day ->
+            items(week1ActualDays) { day ->
                 val isHighlighted = day.isCurrent
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(if (isHighlighted) ElevoraColors.SlateCard else ElevoraColors.DarkVoid)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(if (isHighlighted) ElevoraColors.SlateCard else ElevoraColors.MidnightSurface)
                         .border(
-                            width = 1.dp,
+                            width = 1.2.dp,
                             color = if (isHighlighted) ElevoraColors.GoldPrimary else ElevoraColors.CardStroke,
-                            shape = RoundedCornerShape(14.dp)
+                            shape = RoundedCornerShape(16.dp)
                         )
-                        .clickable(enabled = !day.isLocked) {
-                            onDayClick(day.dayNumber)
-                        }
-                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                        .clickable(enabled = !day.isLocked) { onDayClick(day.dayNumber) }
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Play Icon or Lock Icon
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
+                                .size(42.dp)
                                 .clip(CircleShape)
                                 .background(if (isHighlighted) ElevoraColors.GoldSubtle else ElevoraColors.SlateCardGlass)
                                 .border(
@@ -177,14 +192,14 @@ fun ModuleWeekScreen(
                                     imageVector = Icons.Outlined.Lock,
                                     contentDescription = "Locked",
                                     tint = ElevoraColors.TextMuted,
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(18.dp)
                                 )
                             } else {
                                 Icon(
                                     imageVector = Icons.Filled.PlayArrow,
                                     contentDescription = "Play",
                                     tint = ElevoraColors.GoldPrimary,
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(24.dp)
                                 )
                             }
                         }
@@ -193,8 +208,8 @@ fun ModuleWeekScreen(
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Day ${day.dayNumber}",
-                                color = if (isHighlighted) ElevoraColors.GoldPrimary else ElevoraColors.TextSecondary,
+                                text = "Day ${day.dayNumber} • Class ${day.dayNumber}",
+                                color = if (isHighlighted) ElevoraColors.GoldPrimary else ElevoraColors.TextMuted,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -202,16 +217,22 @@ fun ModuleWeekScreen(
                             Text(
                                 text = day.title,
                                 color = if (day.isLocked) ElevoraColors.TextMuted else ElevoraColors.TextPrimary,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.SemiBold
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = day.subtitle,
+                                color = ElevoraColors.TextSecondary,
+                                fontSize = 12.sp,
+                                maxLines = 1
                             )
                         }
 
                         if (isHighlighted) {
-                            // Circular 0% progress indicator
                             Box(
                                 modifier = Modifier
-                                    .size(32.dp)
+                                    .size(34.dp)
                                     .clip(CircleShape)
                                     .border(1.5.dp, ElevoraColors.GoldPrimary, CircleShape),
                                 contentAlignment = Alignment.Center
@@ -219,17 +240,10 @@ fun ModuleWeekScreen(
                                 Text(
                                     text = "${day.progressPercent}%",
                                     color = ElevoraColors.GoldPrimary,
-                                    fontSize = 10.sp,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
-                        } else if (day.isLocked) {
-                            Icon(
-                                imageVector = Icons.Outlined.Lock,
-                                contentDescription = null,
-                                tint = ElevoraColors.TextMuted,
-                                modifier = Modifier.size(16.dp)
-                            )
                         }
                     }
                 }
@@ -237,4 +251,3 @@ fun ModuleWeekScreen(
         }
     }
 }
-
