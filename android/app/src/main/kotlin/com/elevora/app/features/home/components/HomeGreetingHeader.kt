@@ -37,8 +37,8 @@ fun HomeGreetingHeader(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(ElevoraColors.SurfaceNavy)
-            .border(1.dp, ElevoraColors.CardBorder, RoundedCornerShape(20.dp))
+            .background(ElevoraColors.SlateCard)
+            .border(1.dp, ElevoraColors.CardStroke, RoundedCornerShape(20.dp))
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically

@@ -52,9 +52,9 @@ fun HeroProgressCard(
             .background(
                 Brush.linearGradient(
                     colors = listOf(
-                        ElevoraColors.SurfaceNavy,
+                        ElevoraColors.SlateCard,
                         Color(0xFF131F38),
-                        ElevoraColors.SurfaceNavy
+                        ElevoraColors.SlateCard
                     )
                 )
             )
@@ -157,7 +157,7 @@ fun HeroProgressCard(
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp)),
                     color = ElevoraColors.GoldPrimary,
-                    trackColor = ElevoraColors.CardBackground
+                    trackColor = ElevoraColors.MidnightSurface
                 )
             }
 

@@ -98,8 +98,8 @@ private fun QuickPracticeTile(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(ElevoraColors.SurfaceNavy)
-            .border(1.dp, ElevoraColors.CardBorder, RoundedCornerShape(16.dp))
+            .background(ElevoraColors.SlateCard)
+            .border(1.dp, ElevoraColors.CardStroke, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
             .padding(vertical = 12.dp, horizontal = 4.dp),
         contentAlignment = Alignment.Center

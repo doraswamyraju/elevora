@@ -55,8 +55,8 @@ fun Day1SequenceTrackerCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(ElevoraColors.SurfaceNavy)
-            .border(1.dp, ElevoraColors.CardBorder, RoundedCornerShape(20.dp))
+            .background(ElevoraColors.SlateCard)
+            .border(1.dp, ElevoraColors.CardStroke, RoundedCornerShape(20.dp))
             .padding(16.dp)
     ) {
         Row(
@@ -123,7 +123,7 @@ fun Day1SequenceTrackerCard(
                                 when {
                                     isCompleted -> ElevoraColors.EmeraldCategory.copy(alpha = 0.2f)
                                     isCurrent -> ElevoraColors.GoldPrimary.copy(alpha = 0.25f)
-                                    else -> ElevoraColors.CardBackground
+                                    else -> ElevoraColors.MidnightSurface
                                 }
                             ),
                         contentAlignment = Alignment.Center
@@ -182,7 +182,7 @@ fun Day1SequenceTrackerCard(
                     Icon(
                         imageVector = Icons.Default.ChevronRight,
                         contentDescription = null,
-                        tint = ElevoraColors.CardBorder,
+                        tint = ElevoraColors.CardStroke,
                         modifier = Modifier.size(16.dp)
                     )
                 }
