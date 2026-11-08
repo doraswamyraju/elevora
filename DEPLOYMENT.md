@@ -1,6 +1,6 @@
 # Elevora VPS Deployment Guide (Hostinger Ubuntu 22.04)
 
-> **Important**: This application is hosted on VPS IP `147.93.107.21` at `elevora.sriddha.com`. It runs on **Port 5089** and is completely isolated from other applications (like Restrove on Port 5088).
+> **Important**: This application is hosted on VPS IP `147.93.107.21` at `elevora.sriddha.com`. It runs on **Port 5090** (isolated from `restrove` on 5088 and `thodu` on 5089).
 
 ---
 
@@ -19,11 +19,11 @@ git clone https://github.com/doraswamyraju/elevora.git
 # 3. Enter project directory
 cd /var/www/elevora
 
-# 4. Setup and start Backend (Port 5089)
+# 4. Setup and start Backend (Port 5090)
 cd /var/www/elevora/backend
 npm install
 npm run build
-PORT=5089 pm2 start dist/server.js --name "elevora-backend"
+PORT=5090 pm2 start dist/server.js --name "elevora-backend"
 pm2 save
 
 # 5. Setup and build Web Frontend
@@ -50,9 +50,9 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # API Reverse Proxy to Port 5089
+    # API Reverse Proxy to Port 5090
     location /api/ {
-        proxy_pass http://127.0.0.1:5089;
+        proxy_pass http://127.0.0.1:5090;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
