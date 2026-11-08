@@ -18,10 +18,15 @@ import {
   Activity,
   MessageSquare,
   RefreshCw,
-  Send
+  Send,
+  Home
 } from 'lucide-react';
+import { LandingPage } from './components/landing/LandingPage';
 
 export function App() {
+  // Navigation mode: 'landing' | 'app' | 'login'
+  const [appMode, setAppMode] = useState<'landing' | 'app' | 'login'>('landing');
+
   const [user, setUser] = useState<{ email: string; role: 'LEARNER' | 'TRAINER'; name: string } | null>({
     email: 'user@elevora.com',
     role: 'LEARNER',
@@ -53,9 +58,11 @@ export function App() {
     if (emailInput === 'admin@elevora.com' && passwordInput === 'admin123') {
       setUser({ email: 'admin@elevora.com', role: 'TRAINER', name: 'Elevora Admin Trainer' });
       setAuthError('');
+      setAppMode('app');
     } else if (emailInput === 'user@elevora.com' && passwordInput === 'user123') {
       setUser({ email: 'user@elevora.com', role: 'LEARNER', name: 'Priya Sharma' });
       setAuthError('');
+      setAppMode('app');
     } else {
       setAuthError('Invalid credentials. Use user@elevora.com / user123 or admin@elevora.com / admin123');
     }
@@ -96,9 +103,28 @@ export function App() {
     }
   };
 
-  if (!user) {
+  // If in Landing Page mode, render the rich landing page
+  if (appMode === 'landing') {
     return (
-      <div className="min-h-screen bg-[#080C16] text-white flex items-center justify-center p-4">
+      <LandingPage 
+        onEnterApp={() => setAppMode('app')} 
+        onLoginClick={() => setAppMode('login')} 
+      />
+    );
+  }
+
+  // If user requested Login or is not signed in
+  if (appMode === 'login' || !user) {
+    return (
+      <div className="min-h-screen bg-[#080C16] text-white flex items-center justify-center p-4 relative">
+        <button 
+          onClick={() => setAppMode('landing')}
+          className="absolute top-6 left-6 flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-amber-400 bg-slate-900/60 border border-slate-800 px-3.5 py-2 rounded-xl transition"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Landing Page</span>
+        </button>
+
         <div className="w-full max-w-md bg-[#131C31] border border-[#24304D] rounded-3xl p-8 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#F39C12]/10 blur-3xl pointer-events-none rounded-full" />
           <div className="flex flex-col items-center mb-6">
@@ -169,6 +195,14 @@ export function App() {
         </div>
 
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => setAppMode('landing')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700/80 text-xs font-semibold text-slate-300 hover:text-amber-400 transition"
+          >
+            <Home className="w-3.5 h-3.5" />
+            <span>Website</span>
+          </button>
+
           <div className="flex items-center gap-2 bg-[#131C31] border border-[#24304D] rounded-full px-3.5 py-1.5 shadow-sm">
             {user.role === 'TRAINER' ? <Shield className="w-4 h-4 text-[#F39C12]" /> : <User className="w-4 h-4 text-[#F39C12]" />}
             <span className="text-xs font-semibold">{user.name}</span>
@@ -178,7 +212,10 @@ export function App() {
           </div>
 
           <button
-            onClick={() => setUser(null)}
+            onClick={() => {
+              setUser(null);
+              setAppMode('landing');
+            }}
             className="p-2 rounded-full bg-[#131C31] hover:bg-amber-950/40 border border-[#24304D] text-gray-400 hover:text-[#F39C12] transition"
             title="Log Out"
           >
