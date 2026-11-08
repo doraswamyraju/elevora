@@ -1,86 +1,56 @@
-# Elevora VPS Deployment & Isolation Guide
+# Elevora VPS Deployment Guide (Hostinger Ubuntu 22.04)
 
-This application is configured for deployment on Hostinger VPS **147.93.107.21** without interfering with any existing applications (such as Restrove on 5088).
-
----
-
-## Assigned Port & Host
-- **Domain:** `elevora.sriddha.com`
-- **Assigned Dedicated Port:** `5089` (Firewall rule already active on VPS)
-- **VPS Host:** `147.93.107.21`
-- **Application Directory on VPS:** `/var/www/elevora`
-- **PM2 Service Name:** `elevora-backend`
+> **Important**: This application is hosted on VPS IP `147.93.107.21` at `elevora.sriddha.com`. It runs on **Port 5089** and is completely isolated from other applications (like Restrove on Port 5088).
 
 ---
 
-## 1. Initial VPS Setup & Clone
+## Part 1: First-Time Setup (Run Once Only)
 
-SSH into your Hostinger VPS from your terminal:
-```bash
-ssh root@147.93.107.21
-```
+If the project directory does not yet exist on your VPS, you **must clone it first** before pulling or navigating into subdirectories:
 
-Clone the Elevora repository:
 ```bash
+# 1. Ensure /var/www exists and navigate there
+mkdir -p /var/www
 cd /var/www
+
+# 2. Clone the repository
 git clone https://github.com/doraswamyraju/elevora.git
-cd elevora
-```
 
----
+# 3. Enter project directory
+cd /var/www/elevora
 
-## 2. Start Backend API on Port 5089 (Isolated Daemon)
-
-```bash
+# 4. Setup and start Backend (Port 5089)
 cd /var/www/elevora/backend
 npm install
 npm run build
-
-# Start using PM2 daemon exclusively on port 5089
 PORT=5089 pm2 start dist/server.js --name "elevora-backend"
 pm2 save
-```
 
-Verify backend health check on port 5089:
-```bash
-curl http://localhost:5089/health
-# Response: {"status":"ok","service":"Elevora LMS Backend API","port":5089,...}
-```
-
----
-
-## 3. Build Web Module
-
-```bash
+# 5. Setup and build Web Frontend
 cd /var/www/elevora/web
 npm install
 npm run build
 ```
-This generates the optimized production build at `/var/www/elevora/web/dist`.
 
 ---
 
-## 4. Nginx Configuration for `elevora.sriddha.com`
+## Part 2: Nginx & SSL Configuration (Run Once Only)
 
-Create a separate Nginx site configuration so it has zero impact on other sites:
+Create the isolated Nginx site file:
 ```bash
-nano /etc/nginx/sites-available/elevora.sriddha.com
-```
-
-Paste the following configuration:
-```nginx
+cat << 'EOF' > /etc/nginx/sites-available/elevora.sriddha.com
 server {
     listen 80;
     server_name elevora.sriddha.com;
 
-    # Frontend Static SPA
+    # Frontend Static Single Page Application
     location / {
         root /var/www/elevora/web/dist;
         index index.html;
         try_files $uri $uri/ /index.html;
     }
 
-    # Reverse Proxy to Elevora Port 5089 Only
+    # API Reverse Proxy to Port 5089
     location /api/ {
         proxy_pass http://127.0.0.1:5089;
         proxy_http_version 1.1;
@@ -90,49 +60,78 @@ server {
         proxy_cache_bypass $http_upgrade;
     }
 }
+EOF
 ```
 
-Enable the site and reload Nginx:
+Enable site and restart Nginx:
 ```bash
 ln -s /etc/nginx/sites-available/elevora.sriddha.com /etc/nginx/sites-enabled/
 nginx -t
 systemctl reload nginx
 ```
 
-Install SSL certificate via Certbot:
+Generate Free SSL via Certbot:
 ```bash
 certbot --nginx -d elevora.sriddha.com
 ```
 
 ---
 
-## 5. Ongoing Push-Pull Deployment Workflow
+## Part 3: Daily Update / Deployment Workflow
 
-When new course modules or features are committed and pushed locally:
+Whenever you push new changes from your local machine, run this **failsafe one-liner** or copy-paste the block below:
+
 ```bash
-# 1. On Local Machine:
-git add .
-git commit -m "feat: added new lessons"
-git push origin main
-
-# 2. On VPS (via SSH):
-cd /var/www/elevora
-git pull origin main
-
-# Rebuild backend & restart PM2 daemon
-cd backend
-npm install
-npm run build
-pm2 restart elevora-backend
-
-# Rebuild frontend
-cd ../web
-npm install
+cd /var/www/elevora && \
+git pull origin main && \
+cd /var/www/elevora/backend && \
+npm install && \
+npm run build && \
+pm2 restart elevora-backend && \
+cd /var/www/elevora/web && \
+npm install && \
 npm run build
 ```
+
 ---
 
-## Credentials Configured
-- **Learner:** `user@elevora.com` / `user123`
-- **Trainer/Admin:** `admin@elevora.com` / `admin123`
+## Troubleshooting Common Errors
 
+### 1. `cd: /var/www/elevora: No such file or directory`
+**Cause**: The repository has not been cloned to `/var/www` yet.
+**Fix**:
+```bash
+mkdir -p /var/www && cd /var/www && git clone https://github.com/doraswamyraju/elevora.git
+```
+
+### 2. `fatal: not a git repository (or any of the parent directories): .git`
+**Cause**: You ran `git pull` from your home directory (`/root`) instead of `/var/www/elevora`.
+**Fix**: Always make sure you are in `/var/www/elevora` before running `git pull`:
+```bash
+cd /var/www/elevora && git status
+```
+
+### 3. `[PM2][ERROR] Process or Namespace elevora-backend not found`
+**Cause**: The PM2 daemon has not been started for the first time yet.
+**Fix**:
+```bash
+cd /var/www/elevora/backend
+PORT=5089 pm2 start dist/server.js --name "elevora-backend"
+pm2 save
+```
+
+### 4. `npm error Tracker "idealTree" already exists`
+**Cause**: `npm install` was run in `/root` because the previous `cd` command failed, or a stale lockfile exists.
+**Fix**: Clean the lock or ensure you are in the correct directory:
+```bash
+rm -f /root/package.json /root/package-lock.json
+cd /var/www/elevora/backend && npm install
+```
+
+---
+
+## App Ports & Credentials
+- **Backend Port**: `5089` (dedicated firewall rule active)
+- **Web URL**: `https://elevora.sriddha.com`
+- **Learner Login**: `user@elevora.com` / `user123`
+- **Trainer/Admin Login**: `admin@elevora.com` / `admin123`
