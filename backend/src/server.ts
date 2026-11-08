@@ -1,6 +1,9 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5090;
@@ -345,7 +348,7 @@ Respond ONLY with a strictly formatted JSON object:
 `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.5-flash-lite',
       contents: prompt,
       config: {
         responseMimeType: 'application/json'
