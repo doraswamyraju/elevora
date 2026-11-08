@@ -230,59 +230,117 @@ app.get('/api/course/day1', (req: Request, res: Response) => {
   res.json({ success: true, data: day1ExactContent });
 });
 
-// AI Practice Partner Endpoint with Token Telemetry
+// AI Practice Partner Endpoint: Evaluates learner in real-time based on the specific module & lesson
 app.post('/api/ai/practice-feedback', async (req: Request, res: Response) => {
   try {
-    const { userSpokenText, apiKey, scenarioContext } = req.body;
-    const keyToUse = apiKey || process.env.GEMINI_API_KEY;
+    const { userSpokenText, moduleNumber, lessonId, scenarioContext } = req.body;
+    const keyToUse = process.env.GEMINI_API_KEY || req.body.apiKey;
 
     if (!userSpokenText || userSpokenText.trim() === '') {
       return res.status(400).json({ success: false, message: 'Please provide user spoken text.' });
     }
 
+    // Dynamic curriculum context resolution based on moduleNumber and lessonId
+    const currentModuleNum = moduleNumber || 1;
+    let targetScenarioDesc = scenarioContext || "Module 1, Lesson 1: Professional Self-Introductions & First Impressions.";
+    let targetVocabulary = ["role", "department", "experience", "responsibility", "position", "team", "background", "objective"];
+    let targetPhrases = [
+      "Let me explain that clearly.",
+      "Could you please clarify that?",
+      "My main responsibility is…",
+      "The priority is…",
+      "Let's look at the best solution.",
+      "I'd like to make sure we agree on the next step."
+    ];
+
+    if (currentModuleNum === 2) {
+      targetScenarioDesc = "Module 2: Daily Standups, Cross-Functional Syncs & Task Delegation.";
+      targetVocabulary = ["streamline", "cross-functional", "blocker", "alignment", "delegate", "bandwidth", "cadence"];
+      targetPhrases = [
+        "From my side, the key update is...",
+        "We are currently unblocking...",
+        "I'd like to hand this over to...",
+        "Let's sync offline on this."
+      ];
+    } else if (currentModuleNum === 3) {
+      targetScenarioDesc = "Module 3: Managing People, Performance Discussions & High-Stakes Meetings.";
+      targetVocabulary = ["consensus", "appraisal", "milestone", "facilitate", "accountability", "constructive", "trajectory"];
+      targetPhrases = [
+        "I'd like to open the floor for...",
+        "Looking at the performance metrics...",
+        "Let's agree on concrete milestones for next sprint.",
+        "How can leadership support your progress?"
+      ];
+    } else if (currentModuleNum === 4) {
+      targetScenarioDesc = "Module 4: Executive Email Summaries (BLUF) & Data Presentations.";
+      targetVocabulary = ["synthesize", "bottom-line", "actionable", "projection", "stakeholder", "brief", "quarterly"];
+      targetPhrases = [
+        "The bottom line up front is...",
+        "As reflected in the quarter-on-quarter trend...",
+        "The recommended action item is..."
+      ];
+    } else if (currentModuleNum === 5) {
+      targetScenarioDesc = "Module 5: Difficult Conversations, Client Complaints & De-escalation.";
+      targetVocabulary = ["de-escalate", "resolution", "accountability", "mitigate", "clarification", "remedy"];
+      targetPhrases = [
+        "I completely understand your perspective.",
+        "Let's focus on the immediate remedy.",
+        "We are taking full ownership to ensure this does not recur."
+      ];
+    } else if (currentModuleNum === 6) {
+      targetScenarioDesc = "Module 6: Executive Leadership, Strategic Vision & Impromptu Speaking.";
+      targetVocabulary = ["strategic", "imperative", "vision", "empower", "trajectory", "townhall", "leverage"];
+      targetPhrases = [
+        "Our strategic north star for this quarter is...",
+        "The core takeaway for our teams is...",
+        "Let's lead with clarity and measurable impact."
+      ];
+    }
+
     if (!keyToUse) {
-      // Mock fallback with realistic metrics if API key not entered yet
+      // Deterministic high-quality response if API key is not configured yet
       return res.json({
         success: true,
         isSimulated: true,
-        rolePlayReply: "Nice to meet you! As a department lead, it's great to hear your background. Could you clarify what your main priority is for this week?",
+        rolePlayReply: "Pleased to meet you! As our Operations lead, could you please clarify what your team's immediate priority is for this week's rollout?",
         feedback: {
-          fluencyScore: 4,
+          fluencyScore: 4.3,
           accuracyScore: 4.5,
-          improvedAlternative: "Good morning! My name is Priya. I have eight years of experience, and my main responsibility is overseeing the Operations department.",
-          vocabularyUsed: ["role", "experience", "department", "responsibility"],
-          vocabularyMissing: ["position", "team", "background", "objective"],
-          trainerObservation: "Strong professional opening. Good pace with minimal hesitation."
-        },
-        telemetry: {
-          promptTokens: 142,
-          completionTokens: 88,
-          totalTokens: 230,
-          estimatedCostUsd: 0.000035,
-          model: "gemini-2.5-flash"
+          improvedAlternative: "Good morning! My name is Priya, and I oversee the Operations department. My primary responsibility is cross-functional delivery.",
+          vocabularyUsed: ["responsibility", "department", "operations"],
+          vocabularyMissing: ["objective", "milestone", "priority"],
+          trainerObservation: "Confident and articulate opening. Great pacing with clear enunciation."
         }
       });
     }
 
-    // Call Google GenAI SDK
+    // Call Google GenAI SDK with the exact module pedagogical prompt
     const ai = new GoogleGenAI({ apiKey: keyToUse });
     const prompt = `
-You are a senior executive communication coach for the Elevora Managerial English Programme.
-Learner's current scenario: Module 1, Lesson 1 — Professional Introductions.
-Target vocabulary words: [role, department, experience, responsibility, position, team, background, objective].
-Target phrases: ["Let me explain that clearly.", "Could you please clarify that?", "My main responsibility is…", "The priority is…", "Let's look at the best solution.", "I'd like to make sure we agree on the next step."].
+You are the senior executive communication coach for the Elevora Managerial English Programme.
+Learner's current curriculum context: ${targetScenarioDesc}
+Target vocabulary words for this module: ${JSON.stringify(targetVocabulary)}
+Target professional phrases: ${JSON.stringify(targetPhrases)}
 
 The learner said: "${userSpokenText}"
 
-Respond with a strictly formatted JSON object:
+Your task:
+1. Act as the professional conversation partner in this exact workplace context and respond with natural executive dialogue (max 2 sentences).
+2. Rate their Fluency from 1.0 to 5.0 (natural pacing, confidence, minimal hesitation).
+3. Rate their Accuracy from 1.0 to 5.0 (grammar, word order, preposition precision).
+4. Provide an 'improvedAlternative' showing an executive, highly polished way to say what they meant.
+5. Identify which target vocabulary words they used vs missed.
+6. Provide one actionable 'trainerObservation' for immediate improvement.
+
+Respond ONLY with a strictly formatted JSON object:
 {
-  "rolePlayReply": "A realistic, professional managerial dialogue response as their conversation partner (max 2 sentences)",
-  "fluencyScore": 4, // 1 to 5 scale
-  "accuracyScore": 4, // 1 to 5 scale
-  "improvedAlternative": "A more polished, executive phrasing of what the learner tried to say",
-  "vocabularyUsed": ["array of target words they used"],
-  "vocabularyMissing": ["array of target words they could have used"],
-  "trainerObservation": "One concise sentence of constructive actionable feedback"
+  "rolePlayReply": "...",
+  "fluencyScore": 4.2,
+  "accuracyScore": 4.0,
+  "improvedAlternative": "...",
+  "vocabularyUsed": ["..."],
+  "vocabularyMissing": ["..."],
+  "trainerObservation": "..."
 }
 `;
 
@@ -297,29 +355,17 @@ Respond with a strictly formatted JSON object:
     const responseText = response.text || '{}';
     const parsedData = JSON.parse(responseText);
 
-    const usage = response.usageMetadata || { promptTokenCount: 150, candidatesTokenCount: 90, totalTokenCount: 240 };
-    const promptTokens = usage.promptTokenCount || 150;
-    const completionTokens = usage.candidatesTokenCount || 90;
-    const totalTokens = usage.totalTokenCount || (promptTokens + completionTokens);
-
     return res.json({
       success: true,
       isSimulated: false,
-      rolePlayReply: parsedData.rolePlayReply || "Great to meet you. Let's look at the best solution together.",
+      rolePlayReply: parsedData.rolePlayReply || "Thank you for the update. Let's make sure we align on the next milestone.",
       feedback: {
-        fluencyScore: parsedData.fluencyScore || 4,
-        accuracyScore: parsedData.accuracyScore || 4,
+        fluencyScore: parsedData.fluencyScore || 4.2,
+        accuracyScore: parsedData.accuracyScore || 4.0,
         improvedAlternative: parsedData.improvedAlternative || userSpokenText,
         vocabularyUsed: parsedData.vocabularyUsed || [],
         vocabularyMissing: parsedData.vocabularyMissing || [],
-        trainerObservation: parsedData.trainerObservation || "Good workplace tone."
-      },
-      telemetry: {
-        promptTokens,
-        completionTokens,
-        totalTokens,
-        estimatedCostUsd: Number(((totalTokens / 1000000) * 0.15).toFixed(6)),
-        model: "gemini-2.5-flash"
+        trainerObservation: parsedData.trainerObservation || "Polite tone with good professional presence."
       }
     });
 

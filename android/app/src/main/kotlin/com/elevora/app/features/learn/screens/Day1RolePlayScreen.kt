@@ -24,6 +24,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -307,32 +308,70 @@ fun Day1RolePlayScreen(
                 }
             }
         } else {
-            // Mode B: With AI (Google GenAI Gemini integration)
-            ElevoraGlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 14.dp) {
+            // Mode B: Elevora AI Executive Speaking Coach
+            ElevoraGlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 16.dp) {
                 Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Filled.AutoAwesome,
-                            contentDescription = null,
-                            tint = ElevoraColors.GoldPrimary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Google AI Studio Practice Coach",
-                            color = ElevoraColors.GoldPrimary,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .clip(CircleShape)
+                                    .background(ElevoraColors.GoldPrimary.copy(alpha = 0.15f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.AutoAwesome,
+                                    contentDescription = null,
+                                    tint = ElevoraColors.GoldPrimary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "Elevora AI Speaking Coach",
+                                    color = ElevoraColors.TextPrimary,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "Module 1 • Real-time Dialogue & Assessment",
+                                    color = ElevoraColors.GoldLight,
+                                    fontSize = 10.sp
+                                )
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(ElevoraColors.EmeraldCategory.copy(alpha = 0.15f))
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = "Active Coach",
+                                color = ElevoraColors.EmeraldCategory,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
                     Text(
-                        text = "Speak or enter your introduction. Gemini 2.5 Flash acts as your colleague, evaluates your hesitation, and calculates token usage.",
+                        text = "Speak or refine your executive introduction. The coach responds in character and provides personalized fluency and phrasing improvements.",
                         color = ElevoraColors.TextSecondary,
-                        fontSize = 11.sp
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     OutlinedTextField(
                         value = spokenResponseText,
@@ -347,7 +386,7 @@ fun Day1RolePlayScreen(
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     Button(
                         onClick = {
@@ -355,18 +394,18 @@ fun Day1RolePlayScreen(
                             coroutineScope.launch {
                                 val eval = ElevoraApiClient.sendSpeakingPractice(
                                     userSpokenText = spokenResponseText,
-                                    targetScenario = "Day 1: Professional Self-Introduction",
-                                    apiKey = if (apiKeyInput.isNotBlank()) apiKeyInput else null
+                                    targetScenario = "Module 1, Lesson 1: Professional Self-Introduction",
+                                    apiKey = null
                                 )
                                 aiReply = eval.rolePlayReply
                                 aiFluencyScore = "${eval.fluencyScore} / 5.0"
                                 improvedVersion = eval.improvedAlternative
-                                tokensUsed = "${eval.totalTokens} tokens"
                                 isEvaluating = false
                             }
                         },
                         enabled = !isEvaluating,
                         colors = ButtonDefaults.buttonColors(containerColor = ElevoraColors.GoldPrimary),
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth().height(48.dp)
                     ) {
                         if (isEvaluating) {
@@ -376,56 +415,89 @@ fun Day1RolePlayScreen(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text(text = "Send to AI Coach", color = ElevoraColors.DeepNavy, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = "Get Real-time AI Feedback",
+                                color = ElevoraColors.DeepNavy,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
                         }
                     }
                 }
             }
 
             if (aiReply != null) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                // AI Response & Telemetry Widget
+                // AI Response & Coaching Feedback Card
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(ElevoraColors.SlateCard)
-                        .border(1.2.dp, ElevoraColors.GoldPrimary, RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color(0xFF0F1C36))
+                        .border(1.2.dp, ElevoraColors.GoldPrimary.copy(alpha = 0.5f), RoundedCornerShape(18.dp))
                         .padding(16.dp)
                 ) {
                     Column {
-                        Text(
-                            text = "AI Colleague Response:",
-                            color = ElevoraColors.GoldPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Colleague Response:",
+                                color = ElevoraColors.GoldLight,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(ElevoraColors.GoldPrimary.copy(alpha = 0.15f))
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "Fluency: $aiFluencyScore",
+                                    color = ElevoraColors.GoldPrimary,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
                         Text(
                             text = "\"$aiReply\"",
                             color = ElevoraColors.TextPrimary,
                             fontSize = 13.sp,
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 18.sp
                         )
 
-                        Spacer(modifier = Modifier.height(10.dp))
-                        HorizontalDivider(color = ElevoraColors.CardStroke)
-                        Spacer(modifier = Modifier.height(10.dp))
+                        if (improvedVersion != null) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            HorizontalDivider(color = ElevoraColors.CardStroke)
+                            Spacer(modifier = Modifier.height(10.dp))
 
-                        // Token Telemetry
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column {
-                                Text(text = "Fluency Score", color = ElevoraColors.TextMuted, fontSize = 10.sp)
-                                Text(text = aiFluencyScore, color = ElevoraColors.GoldPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                            }
-                            Column {
-                                Text(text = "Token Usage", color = ElevoraColors.TextMuted, fontSize = 10.sp)
-                                Text(text = tokensUsed, color = ElevoraColors.TextPrimary, fontSize = 11.sp)
-                            }
+                            Text(
+                                text = "RECOMMENDED EXECUTIVE PHRASING:",
+                                color = ElevoraColors.GoldPrimary,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 0.8.sp
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = "\"$improvedVersion\"",
+                                color = ElevoraColors.TextPrimary,
+                                fontSize = 12.sp,
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                lineHeight = 16.sp
+                            )
                         }
                     }
                 }
