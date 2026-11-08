@@ -1,5 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 36" fill="none">
-  <polygon points="8,4 38,4 32,11 2,11" fill="#F5A623" />
-  <polygon points="7,15 29,15 24,22 2,22" fill="#F5A623" />
-  <polygon points="6,26 36,26 30,33 0,33" fill="#F5A623" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 32" fill="none">
+  <!-- Top bar -->
+  <polygon points="6,2 34,2 29,9 1,9" fill="#F5A623" />
+  <!-- Middle bar -->
+  <polygon points="5,12 25,12 21,19 1,19" fill="#F5A623" />
+  <!-- Bottom bar -->
+  <polygon points="4,22 32,22 27,29 0,29" fill="#F5A623" />
 </svg>
