@@ -152,3 +152,4 @@ app.get('/api/trainer/overview', (req: Request, res: Response) => {
 app.listen(PORT, () => {
   console.log(`Elevora Backend API running on port ${PORT}`);
 });
+

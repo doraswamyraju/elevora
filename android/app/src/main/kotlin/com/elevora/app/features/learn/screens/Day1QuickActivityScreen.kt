@@ -172,3 +172,4 @@ fun Day1QuickActivityScreen(
         Spacer(modifier = Modifier.height(10.dp))
     }
 }
+
