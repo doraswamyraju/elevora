@@ -1,5 +1,4 @@
 import React from 'react';
-import { ArrowRight, Play } from 'lucide-react';
 
 interface CtaBannerSectionProps {
   onStartLearning: () => void;
@@ -8,34 +7,39 @@ interface CtaBannerSectionProps {
 
 export const CtaBannerSection: React.FC<CtaBannerSectionProps> = ({ onStartLearning, onWatchDemo }) => {
   return (
-    <section className="py-16 md:py-24 relative overflow-hidden bg-[#0A101E]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative rounded-3xl bg-gradient-to-r from-[#111A2E] via-[#16223D] to-[#101828] border border-amber-500/30 p-8 sm:p-14 text-center lg:text-left flex flex-col lg:flex-row items-center justify-between gap-8 shadow-2xl">
+    <section className="py-14 bg-[#081124] text-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           
-          <div className="space-y-3 max-w-xl">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-display leading-tight">
-              Ready to Speak English <br />
-              <span className="text-amber-400">with Confidence?</span>
+          <div className="space-y-1.5">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white font-display">
+              Ready to Speak English <br className="hidden sm:inline" />
+              <span className="relative inline-block text-[#F5A623]">
+                with Confidence?
+                <svg className="absolute -bottom-1.5 left-0 w-full h-2.5 text-[#F5A623]" viewBox="0 0 170 10" fill="none">
+                  <path d="M2.5 7C45 2 125 1 167.5 7.5" stroke="#F5A623" strokeWidth="3" strokeLinecap="round" />
+                </svg>
+              </span>
             </h2>
-            <p className="text-sm sm:text-base text-slate-300">
+            <p className="text-xs text-slate-300">
               Join Elevora today and build the workplace English skills you need for your career growth.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0">
+          <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
             <button
               onClick={onStartLearning}
-              className="w-full sm:w-auto px-8 py-4 text-sm sm:text-base font-bold text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 rounded-xl shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 transition-all"
+              className="px-6 py-3 rounded-full text-xs font-bold text-slate-950 bg-[#F5A623] hover:bg-[#e0951b] shadow-md shadow-amber-500/20 flex items-center gap-1.5 transition-all"
             >
               <span>Get Started Now</span>
-              <ArrowRight className="w-5 h-5" />
+              <span className="text-sm font-black">→</span>
             </button>
 
             <button
               onClick={onWatchDemo}
-              className="w-full sm:w-auto px-6 py-4 text-sm sm:text-base font-semibold text-slate-200 hover:text-white bg-slate-900/80 hover:bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center gap-2 transition-all"
+              className="px-5 py-3 rounded-full text-xs font-semibold text-white bg-[#0A1224] hover:bg-[#121E36] border border-slate-700 flex items-center gap-1.5 transition-all"
             >
-              <Play className="w-4 h-4 fill-current text-amber-400" />
+              <span className="w-4 h-4 rounded-full border border-slate-500 flex items-center justify-center text-[8px] text-amber-400">▶</span>
               <span>Watch Demo</span>
             </button>
           </div>
@@ -45,4 +49,3 @@ export const CtaBannerSection: React.FC<CtaBannerSectionProps> = ({ onStartLearn
     </section>
   );
 };
-

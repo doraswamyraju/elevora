@@ -1,4 +1,5 @@
 import React from 'react';
+import { ElevoraLogo } from './ElevoraLogo';
 
 interface NavbarProps {
   onLoginClick: () => void;
@@ -7,61 +8,55 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onLoginClick, onGetStartedClick }) => {
   return (
-    <header className="sticky top-0 z-50 bg-[#080C16]/90 backdrop-blur-md border-b border-slate-800/80">
+    <header className="sticky top-0 z-50 bg-[#060D1E]/95 backdrop-blur-md border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        {/* Brand Logo */}
-        <a href="#hero" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 via-amber-500 to-yellow-300 p-0.5 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-            <div className="w-full h-full bg-[#080C16] rounded-[10px] flex items-center justify-center">
-              <svg className="w-6 h-6 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M4 5h16a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 0-1 1v1h10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H8v1a1 1 0 0 0 1 1h11a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
-              </svg>
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-2xl font-extrabold tracking-tight text-white flex items-center gap-1 font-display">
-              Elevora<span className="text-amber-400 text-sm align-super">™</span>
-            </span>
-            <span className="text-[10px] tracking-wider text-slate-400 uppercase font-medium">Professional English</span>
-          </div>
+        
+        {/* Exact Elevora Logo */}
+        <a href="#hero" className="hover:opacity-90 transition-opacity">
+          <ElevoraLogo size="md" />
         </a>
 
-        {/* Desktop Nav Links */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-          <a href="#hero" className="hover:text-amber-400 transition-colors">Home</a>
-          <a href="#courses" className="hover:text-amber-400 transition-colors flex items-center gap-1">
-            Courses
-            <svg className="w-3.5 h-3.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        {/* Center Nav Links with active underlined/bold states matching image */}
+        <nav className="hidden lg:flex items-center gap-7 text-[13px] font-semibold text-slate-300">
+          <a href="#hero" className="text-white hover:text-amber-400 transition-colors">Home</a>
+          
+          <div className="relative group cursor-pointer flex items-center gap-1 hover:text-amber-400 transition-colors">
+            <a href="#courses">Courses</a>
+            <svg className="w-3.5 h-3.5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
-          </a>
+          </div>
+
           <a href="#features" className="hover:text-amber-400 transition-colors">Features</a>
-          <a href="#business" className="hover:text-amber-400 transition-colors">For Businesses</a>
+          
+          {/* For Businesses highlighted */}
+          <a href="#business" className="text-white underline decoration-amber-400 decoration-2 underline-offset-8 font-bold">
+            For Businesses
+          </a>
+
           <a href="#pricing" className="hover:text-amber-400 transition-colors">Pricing</a>
-          <a href="#testimonials" className="hover:text-amber-400 transition-colors">Reviews</a>
-          <a href="#blog" className="hover:text-amber-400 transition-colors">Blog</a>
+          <a href="#about" className="hover:text-amber-400 transition-colors">About</a>
         </nav>
 
-        {/* CTA Buttons */}
+        {/* Right CTA Buttons: Oval outlined 'Login' & Pill yellow filled 'Get Started →' */}
         <div className="flex items-center gap-3">
           <button
             onClick={onLoginClick}
-            className="px-4 py-2 text-sm font-semibold text-slate-200 hover:text-white bg-slate-900/60 hover:bg-slate-800 border border-slate-700/60 rounded-xl transition-all"
+            className="px-6 py-2 rounded-full text-xs font-semibold text-white border border-slate-600 hover:border-amber-400 hover:text-amber-400 transition-all"
           >
             Login
           </button>
+          
           <button
             onClick={onGetStartedClick}
-            className="px-5 py-2.5 text-sm font-bold text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 rounded-xl shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:-translate-y-0.5 transition-all flex items-center gap-1.5"
+            className="px-6 py-2.5 rounded-full text-xs font-bold text-slate-950 bg-[#F5A623] hover:bg-[#e0951b] transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/20"
           >
-            Get Started
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
+            <span>Get Started</span>
+            <span className="text-sm font-black">→</span>
           </button>
         </div>
+
       </div>
     </header>
   );
 };
-
