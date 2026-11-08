@@ -34,7 +34,9 @@ import com.elevora.app.R
 import com.elevora.app.core.designsystem.colors.ElevoraColors
 import com.elevora.app.core.designsystem.components.buttons.ElevoraPrimaryButton
 import com.elevora.app.core.designsystem.components.cards.ElevoraGlassCard
+import com.elevora.app.core.network.ElevoraApiClient
 import com.elevora.app.features.learn.model.Day1Curriculum
+import kotlinx.coroutines.launch
 
 enum class RolePlayMode {
     WITHOUT_AI,
@@ -60,6 +62,8 @@ fun Day1RolePlayScreen(
     var aiFluencyScore by remember { mutableStateOf("4.5 / 5.0") }
     var tokensUsed by remember { mutableStateOf("230 tokens (~$0.000035)") }
     var isEvaluating by remember { mutableStateOf(false) }
+    var improvedVersion by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = modifier
@@ -348,13 +352,32 @@ fun Day1RolePlayScreen(
                     Button(
                         onClick = {
                             isEvaluating = true
-                            aiReply = "Nice to meet you Priya! As a logistics lead, could you please clarify what our team's main objective should be this week?"
-                            isEvaluating = false
+                            coroutineScope.launch {
+                                val eval = ElevoraApiClient.sendSpeakingPractice(
+                                    userSpokenText = spokenResponseText,
+                                    targetScenario = "Day 1: Professional Self-Introduction",
+                                    apiKey = if (apiKeyInput.isNotBlank()) apiKeyInput else null
+                                )
+                                aiReply = eval.rolePlayReply
+                                aiFluencyScore = "${eval.fluencyScore} / 5.0"
+                                improvedVersion = eval.improvedAlternative
+                                tokensUsed = "${eval.totalTokens} tokens"
+                                isEvaluating = false
+                            }
                         },
+                        enabled = !isEvaluating,
                         colors = ButtonDefaults.buttonColors(containerColor = ElevoraColors.GoldPrimary),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().height(48.dp)
                     ) {
-                        Text(text = "Send to AI Coach", color = ElevoraColors.DeepNavy, fontWeight = FontWeight.Bold)
+                        if (isEvaluating) {
+                            CircularProgressIndicator(
+                                color = ElevoraColors.DeepNavy,
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(text = "Send to AI Coach", color = ElevoraColors.DeepNavy, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
