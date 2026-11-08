@@ -305,8 +305,21 @@ fun ElevoraAppRoot() {
                     ) {
                         when (currentTab) {
                             BottomTab.HOME -> HomeScreen(
+                                userName = if (isTrainerMode) "Trainer Admin" else "Raju",
+                                streakDays = 4,
                                 onContinueLearningClick = {
                                     destination = AppDestination.MODULE_OVERVIEW
+                                },
+                                onStepClick = { stepIndex ->
+                                    destination = when (stepIndex) {
+                                        0 -> AppDestination.STEP_01_VIDEO
+                                        1 -> AppDestination.STEP_02_WORDS
+                                        2 -> AppDestination.STEP_03_LANGUAGE_FOCUS
+                                        3 -> AppDestination.STEP_04_PRACTICE
+                                        4 -> AppDestination.STEP_05_ROLEPLAY
+                                        5 -> AppDestination.STEP_06_QUIZ
+                                        else -> AppDestination.STEP_07_COMPLETED
+                                    }
                                 },
                                 onSpeakingClick = { currentTab = BottomTab.PRACTICE },
                                 onQuizClick = { currentTab = BottomTab.ASSESS },

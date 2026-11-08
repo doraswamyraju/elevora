@@ -31,6 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.elevora.app.core.designsystem.colors.ElevoraColors
 
+/**
+ * 4-Tile Quick Practice Dock for instant access to Speaking, Quiz, Notes, and Progress
+ */
 @Composable
 fun QuickPracticeDock(
     onSpeakingClick: () -> Unit = {},
@@ -44,7 +47,7 @@ fun QuickPracticeDock(
             text = "Quick Practice",
             color = ElevoraColors.TextPrimary,
             fontWeight = FontWeight.Bold,
-            fontSize = 17.sp,
+            fontSize = 16.sp,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
@@ -53,10 +56,17 @@ fun QuickPracticeDock(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             QuickPracticeTile(
-                title = "Speaking",
+                title = "AI Tutor",
                 icon = Icons.Outlined.Mic,
                 iconTint = ElevoraColors.PurpleCategory,
                 onClick = onSpeakingClick,
+                modifier = Modifier.weight(1f)
+            )
+            QuickPracticeTile(
+                title = "Practice",
+                icon = Icons.Outlined.MenuBook,
+                iconTint = ElevoraColors.GoldPrimary,
+                onClick = onVocabClick,
                 modifier = Modifier.weight(1f)
             )
             QuickPracticeTile(
@@ -64,13 +74,6 @@ fun QuickPracticeDock(
                 icon = Icons.Outlined.Checklist,
                 iconTint = ElevoraColors.CyanCategory,
                 onClick = onQuizClick,
-                modifier = Modifier.weight(1f)
-            )
-            QuickPracticeTile(
-                title = "Vocabulary",
-                icon = Icons.Outlined.MenuBook,
-                iconTint = ElevoraColors.GoldPrimary,
-                onClick = onVocabClick,
                 modifier = Modifier.weight(1f)
             )
             QuickPracticeTile(
@@ -92,37 +95,43 @@ private fun QuickPracticeTile(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val shape = RoundedCornerShape(14.dp)
-    Column(
+    Box(
         modifier = modifier
-            .clip(shape)
-            .background(ElevoraColors.SlateCard)
-            .border(1.dp, ElevoraColors.CardStroke, shape)
+            .clip(RoundedCornerShape(16.dp))
+            .background(ElevoraColors.SurfaceNavy)
+            .border(1.dp, ElevoraColors.CardBorder, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .padding(vertical = 14.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(vertical = 12.dp, horizontal = 4.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(iconTint.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                tint = iconTint,
-                modifier = Modifier.size(20.dp)
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(iconTint.copy(alpha = 0.15f))
+                    .border(1.dp, iconTint.copy(alpha = 0.35f), RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = iconTint,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = title,
+                color = ElevoraColors.TextPrimary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = title,
-            color = ElevoraColors.TextPrimary,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium
-        )
     }
 }
-

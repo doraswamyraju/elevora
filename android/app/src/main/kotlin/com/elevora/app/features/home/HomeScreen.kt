@@ -12,17 +12,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.elevora.app.core.designsystem.colors.ElevoraColors
-import com.elevora.app.features.home.components.ContinueLearningCard
+import com.elevora.app.features.home.components.Day1SequenceTrackerCard
 import com.elevora.app.features.home.components.HeroProgressCard
+import com.elevora.app.features.home.components.HomeGreetingHeader
 import com.elevora.app.features.home.components.MetricsRow
 import com.elevora.app.features.home.components.QuickPracticeDock
 
 /**
- * Elevora Home Dashboard Screen
+ * Elevora Complete Home Dashboard Screen
+ * Built with modular, highly responsive components matching the official design.
  */
 @Composable
 fun HomeScreen(
+    userName: String = "Raju",
+    streakDays: Int = 4,
     onContinueLearningClick: () -> Unit = {},
+    onStepClick: (Int) -> Unit = {},
     onSpeakingClick: () -> Unit = {},
     onQuizClick: () -> Unit = {},
     onVocabClick: () -> Unit = {},
@@ -34,33 +39,29 @@ fun HomeScreen(
             .fillMaxSize()
             .background(ElevoraColors.DeepNavy)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
+        // 1. Personalized User Greeting with Streak
+        HomeGreetingHeader(
+            userName = userName,
+            streakDays = streakDays
+        )
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // 2. Active Course Hero Card (Module 1 Foundations)
         HeroProgressCard(
-            programmeName = "Managerial English",
-            durationInfo = "6 Months • 72 Lessons",
-            progress = 0.18f
+            moduleTag = "MODULE 1 • FOUNDATIONS",
+            moduleTitle = "Managerial English Foundations",
+            weekInfo = "Week 1 of 4",
+            dayProgressPercent = 0.85f,
+            activeDayTitle = "Day 1: Professional Introductions",
+            onContinueClick = onContinueLearningClick
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
-        MetricsRow(
-            weekText = "3 of 24",
-            lessonsText = "14 / 72",
-            streakText = "5 Days"
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        ContinueLearningCard(
-            lessonTitle = "Lesson 7",
-            subtitle = "Present Simple for Work",
-            meta = "Module 1 • 12 min",
-            onPlayClick = onContinueLearningClick
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
+        // 3. Quick Action Dock (AI Tutor, Practice, Quiz, Progress)
         QuickPracticeDock(
             onSpeakingClick = onSpeakingClick,
             onQuizClick = onQuizClick,
@@ -68,7 +69,23 @@ fun HomeScreen(
             onProgressClick = onProgressClick
         )
 
-        Spacer(modifier = Modifier.height(80.dp)) // padding for bottom bar
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 4. Daily Learning Path: 7-Step Sequence Tracker
+        Day1SequenceTrackerCard(
+            currentStepIndex = 4, // Step 5: Role-Play is next up
+            onStepClick = onStepClick
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 5. Weekly Metric Counters
+        MetricsRow(
+            weekText = "1 of 24",
+            lessonsText = "4 / 7 Steps",
+            streakText = "$streakDays Days"
+        )
+
+        Spacer(modifier = Modifier.height(90.dp)) // padding for bottom navigation
     }
 }
-
