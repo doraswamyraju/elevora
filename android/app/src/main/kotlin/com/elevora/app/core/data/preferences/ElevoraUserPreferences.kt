@@ -88,3 +88,4 @@ class ElevoraUserPreferences(context: Context) {
         prefs.edit().putLong(KEY_LAST_STUDIED_TIMESTAMP, now).apply()
     }
 }
+
