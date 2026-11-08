@@ -22,26 +22,42 @@ import com.elevora.app.core.designsystem.colors.ElevoraColors
 import com.elevora.app.core.designsystem.components.cards.ElevoraGlassCard
 import com.elevora.app.core.designsystem.components.cards.ElevoraStatusBadge
 import com.elevora.app.core.designsystem.components.progress.ElevoraCircularGauge
-import com.elevora.app.features.progress.components.SkillPerformanceBreakdown
+import com.elevora.app.features.progress.components.AssessmentMilestonesList
+import com.elevora.app.features.progress.components.FiveDimensionRadarCard
+import com.elevora.app.features.progress.model.ProgressAssessmentData
 
+/**
+ * Complete Assessment & Progress Screen
+ * - Overall Programme Completion Gauge
+ * - 5 Observation Dimensions (Fluency, Accuracy, Pronunciation, Vocabulary, Interaction)
+ * - Assessment Milestones (Diagnostic, 5 Monthly, Mid-Course, Final)
+ */
 @Composable
 fun ProgressScreen(
     modifier: Modifier = Modifier
 ) {
+    val dimensions = ProgressAssessmentData.dimensions
+    val milestones = ProgressAssessmentData.milestones
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(ElevoraColors.DeepNavy)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
-        ElevoraGlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 20.dp) {
+        // 1. Overall Programme Progress Card
+        ElevoraGlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 22.dp) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ElevoraCircularGauge(percentage = 0.18f, size = 76.dp, strokeWidth = 8.dp)
+                ElevoraCircularGauge(
+                    percentage = 0.22f,
+                    size = 76.dp,
+                    strokeWidth = 8.dp
+                )
 
                 Column(modifier = Modifier.padding(start = 16.dp)) {
                     Text(
@@ -50,15 +66,15 @@ fun ProgressScreen(
                         fontWeight = FontWeight.Bold,
                         fontSize = 17.sp
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "13 of 72 lessons completed",
+                        text = "16 of 72 lessons completed (Week 6)",
                         color = ElevoraColors.TextSecondary,
-                        fontSize = 13.sp
+                        fontSize = 12.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     ElevoraStatusBadge(
-                        text = "✓ On Track",
+                        text = "✓ On Track • High Fluency Pace",
                         backgroundColor = ElevoraColors.SuccessGreenSubtle,
                         textColor = ElevoraColors.SuccessGreen
                     )
@@ -66,11 +82,21 @@ fun ProgressScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
-        SkillPerformanceBreakdown()
+        // 2. 5 Observation Dimensions Rating Card (Fluency, Accuracy, Pronunciation, Vocab, Interaction)
+        FiveDimensionRadarCard(
+            ratings = dimensions,
+            overallFluencyIndex = 4.2f
+        )
 
-        Spacer(modifier = Modifier.height(80.dp))
+        Spacer(modifier = Modifier.height(18.dp))
+
+        // 3. Curriculum Assessment Milestones (Diagnostic, Monthly 1–5, Mid-Course, Final)
+        AssessmentMilestonesList(
+            milestones = milestones
+        )
+
+        Spacer(modifier = Modifier.height(100.dp)) // padding for bottom bar
     }
 }
-
