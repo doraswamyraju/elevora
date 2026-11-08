@@ -3,7 +3,7 @@ import cors from 'cors';
 import { GoogleGenAI } from '@google/genai';
 
 const app = express();
-const PORT = process.env.PORT || 5089;
+const PORT = process.env.PORT || 5090;
 
 app.use(cors());
 app.use(express.json());

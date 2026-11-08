@@ -131,7 +131,7 @@ cd /var/www/elevora/backend && npm install
 ---
 
 ## App Ports & Credentials
-- **Backend Port**: `5089` (dedicated firewall rule active)
+- **Assigned Dedicated Port:** `5090` (Firewall rule active on VPS)
 - **Web URL**: `https://elevora.sriddha.com`
 - **Learner Login**: `user@elevora.com` / `user123`
 - **Trainer/Admin Login**: `admin@elevora.com` / `admin123`
