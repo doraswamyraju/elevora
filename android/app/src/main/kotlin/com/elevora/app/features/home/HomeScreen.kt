@@ -14,13 +14,13 @@ import androidx.compose.ui.unit.dp
 import com.elevora.app.core.designsystem.colors.ElevoraColors
 import com.elevora.app.features.home.components.Day1SequenceTrackerCard
 import com.elevora.app.features.home.components.HeroProgressCard
-import com.elevora.app.features.home.components.HomeGreetingHeader
 import com.elevora.app.features.home.components.MetricsRow
 import com.elevora.app.features.home.components.QuickPracticeDock
 
 /**
- * Elevora Complete Home Dashboard Screen
- * Built with modular, highly responsive components matching the official design.
+ * Elevora Luxury Home Dashboard Screen:
+ * Clean, uncluttered layout with authentic branding, ambient lighting,
+ * and high-converting pedagogical milestones.
  */
 @Composable
 fun HomeScreen(
@@ -39,17 +39,9 @@ fun HomeScreen(
             .fillMaxSize()
             .background(ElevoraColors.DeepNavy)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
     ) {
-        // 1. Personalized User Greeting with Streak
-        HomeGreetingHeader(
-            userName = userName,
-            streakDays = streakDays
-        )
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        // 2. Active Course Hero Card (Module 1 Foundations)
+        // 1. Active Course Hero Card with Graphic Backdrop & Ambient Glow
         HeroProgressCard(
             moduleTag = "MODULE 1 • FOUNDATIONS",
             moduleTitle = "Managerial English Foundations",
@@ -59,9 +51,9 @@ fun HomeScreen(
             onContinueClick = onContinueLearningClick
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
-        // 3. Quick Action Dock (AI Tutor, Practice, Quiz, Progress)
+        // 2. 2x2 Grid of Luxury Quick Practice Cards
         QuickPracticeDock(
             onSpeakingClick = onSpeakingClick,
             onQuizClick = onQuizClick,
@@ -69,23 +61,23 @@ fun HomeScreen(
             onProgressClick = onProgressClick
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
-        // 4. Daily Learning Path: 7-Step Sequence Tracker
+        // 3. Daily Learning Journey: Connected Node Stepper & Active Milestone Showcase
         Day1SequenceTrackerCard(
-            currentStepIndex = 4, // Step 5: Role-Play is next up
+            currentStepIndex = 4, // Step 5: Role-Play
             onStepClick = onStepClick
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 5. Weekly Metric Counters
+        // 4. Weekly Metric Summary Row
         MetricsRow(
             weekText = "1 of 24",
             lessonsText = "4 / 7 Steps",
             streakText = "$streakDays Days"
         )
 
-        Spacer(modifier = Modifier.height(90.dp)) // padding for bottom navigation
+        Spacer(modifier = Modifier.height(100.dp)) // padding for bottom navigation
     }
 }

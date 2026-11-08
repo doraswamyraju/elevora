@@ -267,11 +267,10 @@ fun ElevoraAppRoot() {
                         .background(ElevoraColors.DeepNavy),
                     topBar = {
                         ElevoraTopBar(
-                            showUserGreeting = currentTab == BottomTab.HOME,
+                            showBrandLogo = currentTab == BottomTab.HOME,
                             showSidebarToggle = true,
-                            showProfileIcon = true,
-                            showLogoutButton = true,
-                            userName = if (isTrainerMode) "Trainer Admin" else "Priya",
+                            streakDays = 4,
+                            userName = if (isTrainerMode) "Admin" else "Raju",
                             title = when (currentTab) {
                                 BottomTab.HOME -> null
                                 BottomTab.LEARN -> "Learning Path"
@@ -287,6 +286,7 @@ fun ElevoraAppRoot() {
                                 }
                             },
                             onProfileClick = { destination = AppDestination.PROFILE_SETTINGS },
+                            onNotificationClick = { /* Notifications sheet */ },
                             onLogoutClick = { destination = AppDestination.LOGIN }
                         )
                     },

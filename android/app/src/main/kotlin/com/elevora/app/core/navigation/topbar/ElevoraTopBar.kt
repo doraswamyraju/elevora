@@ -1,5 +1,6 @@
 package com.elevora.app.core.navigation.topbar
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,11 +9,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.Menu
@@ -24,28 +27,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.elevora.app.R
 import com.elevora.app.core.designsystem.colors.ElevoraColors
 import com.elevora.app.core.navigation.topbar.items.TopBarBackAction
 import com.elevora.app.core.navigation.topbar.items.TopBarNotificationBell
-import com.elevora.app.core.navigation.topbar.items.TopBarUserGreeting
 
 /**
- * Elevora TopBar Shell Container with Sidebar Toggle, Profile, Notifications & Logout
+ * Luxury Elevora TopBar Shell:
+ * Displays official Brand Banner on Home, Streak Badge, Notifications & Profile Action
  */
 @Composable
 fun ElevoraTopBar(
     modifier: Modifier = Modifier,
     title: String? = null,
     showBackButton: Boolean = false,
-    showUserGreeting: Boolean = false,
     showSidebarToggle: Boolean = true,
+    showBrandLogo: Boolean = true,
     showProfileIcon: Boolean = true,
     showNotificationBell: Boolean = true,
-    showLogoutButton: Boolean = true,
-    userName: String = "Priya",
+    showLogoutButton: Boolean = false,
+    streakDays: Int = 4,
+    userName: String = "Raju",
     onBackClick: () -> Unit = {},
     onSidebarToggleClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
@@ -57,23 +63,22 @@ fun ElevoraTopBar(
             .fillMaxWidth()
             .background(ElevoraColors.DeepNavy)
             .statusBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Left side: Sidebar Toggle / Back Button + Greeting/Title
+        // Left side: Sidebar Toggle / Back Button + Brand Logo / Title
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
+            verticalAlignment = Alignment.CenterVertically
         ) {
             if (showBackButton) {
                 TopBarBackAction(onBack = onBackClick)
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(10.dp))
             } else if (showSidebarToggle) {
                 IconButton(
                     onClick = onSidebarToggleClick,
                     modifier = Modifier
-                        .size(38.dp)
+                        .size(40.dp)
                         .clip(CircleShape)
                         .background(ElevoraColors.SlateCard)
                         .border(1.dp, ElevoraColors.CardStroke, CircleShape)
@@ -85,13 +90,16 @@ fun ElevoraTopBar(
                         modifier = Modifier.size(20.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(12.dp))
             }
 
-            if (showUserGreeting) {
-                TopBarUserGreeting(
-                    userName = userName,
-                    onProfileClick = onProfileClick
+            if (showBrandLogo && title == null) {
+                Image(
+                    painter = painterResource(id = R.drawable.elevora_logo_banner),
+                    contentDescription = "Elevora Logo",
+                    modifier = Modifier
+                        .height(30.dp)
+                        .width(120.dp)
                 )
             } else if (title != null) {
                 Text(
@@ -103,31 +111,55 @@ fun ElevoraTopBar(
             }
         }
 
-        // Right side: Profile Icon + Notification Bell + Logout Action
+        // Right side: Streak pill + Notification Bell + User Profile Avatar
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (showProfileIcon && !showUserGreeting) {
-                IconButton(
-                    onClick = onProfileClick,
+            if (showBrandLogo) {
+                // Live streak badge on Home
+                Box(
                     modifier = Modifier
-                        .size(38.dp)
-                        .clip(CircleShape)
-                        .background(ElevoraColors.SlateCard)
-                        .border(1.dp, ElevoraColors.CardStroke, CircleShape)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(ElevoraColors.GoldPrimary.copy(alpha = 0.12f))
+                        .border(1.dp, ElevoraColors.GoldPrimary.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 8.dp, vertical = 5.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Person,
-                        contentDescription = "Profile Settings",
-                        tint = ElevoraColors.GoldPrimary,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "🔥", fontSize = 11.sp)
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "$streakDays",
+                            color = ElevoraColors.GoldPrimary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
                 }
             }
 
             if (showNotificationBell) {
                 TopBarNotificationBell(onClick = onNotificationClick)
+            }
+
+            if (showProfileIcon) {
+                // User Initial Profile Avatar with Gold Rim
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(CircleShape)
+                        .background(ElevoraColors.SlateCard)
+                        .border(1.5.dp, ElevoraColors.GoldPrimary, CircleShape)
+                        .clickable(onClick = onProfileClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = userName.take(1).uppercase(),
+                        color = ElevoraColors.GoldPrimary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    )
+                }
             }
 
             if (showLogoutButton) {
@@ -150,4 +182,3 @@ fun ElevoraTopBar(
         }
     }
 }
-
