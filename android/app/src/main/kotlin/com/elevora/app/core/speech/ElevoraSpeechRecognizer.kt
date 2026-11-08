@@ -11,16 +11,21 @@ import java.util.Locale
 
 /**
  * Native Android Speech-To-Text Recognizer:
- * Converts learner live voice into real-time transcription
- * without requiring any third-party paid speech APIs.
+ * Converts learner live voice into real-time transcription.
+ * 
+ * - onPartial: Updates live preview as the user speaks without triggering AI evaluations.
+ * - onFinalResult: Invoked ONLY when the learner finishes speaking, stopping the mic and
+ *   passing the complete sentence to the AI coach.
  */
 class ElevoraSpeechRecognizer(
     private val context: Context,
-    private val onResult: (String) -> Unit,
+    private val onFinalResult: (String) -> Unit,
+    private val onPartial: (String) -> Unit = {},
     private val onError: (String) -> Unit = {},
     private val onListeningStateChanged: (Boolean) -> Unit = {}
 ) {
     private var speechRecognizer: SpeechRecognizer? = null
+    private var accumulatedSpeech = ""
 
     init {
         initializeRecognizer()
@@ -32,6 +37,7 @@ class ElevoraSpeechRecognizer(
                 setRecognitionListener(object : RecognitionListener {
                     override fun onReadyForSpeech(params: Bundle?) {
                         Log.d("ElevoraSpeech", "Ready for speech")
+                        accumulatedSpeech = ""
                         onListeningStateChanged(true)
                     }
 
@@ -68,11 +74,11 @@ class ElevoraSpeechRecognizer(
 
                     override fun onResults(results: Bundle?) {
                         val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                        val recognizedText = matches?.firstOrNull() ?: ""
-                        Log.d("ElevoraSpeech", "Recognized speech: $recognizedText")
+                        val recognizedText = matches?.firstOrNull() ?: accumulatedSpeech
+                        Log.d("ElevoraSpeech", "Final recognized speech: $recognizedText")
                         onListeningStateChanged(false)
                         if (recognizedText.isNotBlank()) {
-                            onResult(recognizedText)
+                            onFinalResult(recognizedText)
                         }
                     }
 
@@ -80,7 +86,8 @@ class ElevoraSpeechRecognizer(
                         val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                         val partial = matches?.firstOrNull()
                         if (!partial.isNullOrBlank()) {
-                            onResult(partial)
+                            accumulatedSpeech = partial
+                            onPartial(partial) // ONLY updates the live preview text, does NOT trigger AI API
                         }
                     }
 
@@ -93,7 +100,8 @@ class ElevoraSpeechRecognizer(
     }
 
     /**
-     * Start listening to learner voice
+     * Start listening to learner voice.
+     * Generous silence timeout allows natural pauses without interrupting the learner.
      */
     fun startListening() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -101,6 +109,9 @@ class ElevoraSpeechRecognizer(
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault().toLanguageTag())
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+            // Allow 3 seconds of pause before considering speech complete
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 3000L)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 2500L)
         }
         try {
             speechRecognizer?.startListening(intent)
@@ -111,7 +122,7 @@ class ElevoraSpeechRecognizer(
     }
 
     /**
-     * Stop listening
+     * Stop listening manually (e.g. user taps the stop button)
      */
     fun stopListening() {
         try {
@@ -134,4 +145,5 @@ class ElevoraSpeechRecognizer(
         }
     }
 }
+
 

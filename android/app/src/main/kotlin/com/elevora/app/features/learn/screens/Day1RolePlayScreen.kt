@@ -98,6 +98,8 @@ fun Day1RolePlayScreen(
     // Function to evaluate speech and speak back
     fun triggerAiEvaluation(speechText: String) {
         if (speechText.isBlank()) return
+        // Stop any currently playing TTS before processing new speech
+        textToSpeech?.stop()
         isEvaluating = true
         coroutineScope.launch {
             val eval = ElevoraApiClient.sendSpeakingPractice(
@@ -120,9 +122,12 @@ fun Day1RolePlayScreen(
     DisposableEffect(Unit) {
         val recognizer = ElevoraSpeechRecognizer(
             context = context,
-            onResult = { recognizedText ->
-                spokenVoiceText = recognizedText
-                triggerAiEvaluation(recognizedText)
+            onFinalResult = { completeSentence ->
+                spokenVoiceText = completeSentence
+                triggerAiEvaluation(completeSentence)
+            },
+            onPartial = { liveSpeechDraft ->
+                spokenVoiceText = liveSpeechDraft // Update screen text in real-time without interrupting
             },
             onError = { errMsg ->
                 isListening = false
