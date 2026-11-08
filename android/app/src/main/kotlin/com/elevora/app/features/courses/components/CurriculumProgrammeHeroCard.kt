@@ -145,3 +145,4 @@ private fun CurriculumMetricPill(
         }
     }
 }
+
