@@ -347,15 +347,33 @@ Respond ONLY with a strictly formatted JSON object:
 }
 `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash-lite',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json'
-      }
-    });
+    // Fallback list of models: try gemini-3.5-flash-lite, then gemini-3.5-flash
+    let responseText = '{}';
+    const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-3.5-flash'];
+    let lastError: any = null;
 
-    const responseText = response.text || '{}';
+    for (const modelName of modelsToTry) {
+      try {
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json'
+          }
+        });
+        if (response.text) {
+          responseText = response.text;
+          break;
+        }
+      } catch (mErr: any) {
+        lastError = mErr;
+        console.warn(`Model ${modelName} failed, trying next...`, mErr.message);
+      }
+    }
+
+    if (responseText === '{}' && lastError) {
+      throw lastError;
+    }
     const parsedData = JSON.parse(responseText);
 
     return res.json({
