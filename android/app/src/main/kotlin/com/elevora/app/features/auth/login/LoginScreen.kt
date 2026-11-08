@@ -38,13 +38,29 @@ import com.elevora.app.features.auth.components.AuthTextField
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit = {},
+    onLoginSuccess: (isTrainer: Boolean) -> Unit = {},
     onNavigateToRegister: () -> Unit = {},
     onForgotPasswordClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var emailOrPhone by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var emailOrPhone by remember { mutableStateOf("user@elevora.com") }
+    var password by remember { mutableStateOf("user123") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    fun handleSignIn() {
+        val trimmedEmail = emailOrPhone.trim().lowercase()
+        val trimmedPass = password.trim()
+
+        if (trimmedEmail == "admin@elevora.com" && trimmedPass == "admin123") {
+            errorMessage = null
+            onLoginSuccess(true)
+        } else if (trimmedEmail == "user@elevora.com" && trimmedPass == "user123") {
+            errorMessage = null
+            onLoginSuccess(false)
+        } else {
+            errorMessage = "Invalid credentials. Use user@elevora.com / user123 or admin@elevora.com / admin123"
+        }
+    }
 
     Column(
         modifier = modifier
@@ -101,6 +117,16 @@ fun LoginScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
 
+        if (errorMessage != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = errorMessage!!,
+                color = ElevoraColors.AlertAmber,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
@@ -118,7 +144,7 @@ fun LoginScreen(
 
         ElevoraPrimaryButton(
             text = "Sign In",
-            onClick = onLoginSuccess
+            onClick = { handleSignIn() }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -150,7 +176,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         com.elevora.app.features.auth.components.GoogleSignInButton(
-            onClick = onLoginSuccess,
+            onClick = { onLoginSuccess(false) },
             text = "Continue with Google"
         )
 
