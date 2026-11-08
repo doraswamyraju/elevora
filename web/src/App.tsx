@@ -185,13 +185,11 @@ export function App() {
       {/* Top Navbar */}
       <header className="h-16 border-b border-[#24304D] bg-[#0B132B]/90 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#080C16] border border-[#F39C12] flex items-center justify-center font-bold text-lg text-[#F39C12] shadow-[0_0_12px_rgba(243,156,18,0.25)]">
-            E
-          </div>
-          <div>
-            <h1 className="text-base font-bold leading-tight">Elevora</h1>
-            <p className="text-[11px] text-gray-400">Executive Workplace English</p>
-          </div>
+          <img 
+            src="/assets/elevora-logo-banner.png" 
+            alt="Elevora" 
+            className="h-8 w-auto object-contain"
+          />
         </div>
 
         <div className="flex items-center gap-4">

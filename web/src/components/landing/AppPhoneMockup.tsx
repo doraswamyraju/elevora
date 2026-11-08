@@ -34,12 +34,11 @@ export const AppPhoneMockup: React.FC<AppPhoneMockupProps> = ({ onInteract }) =>
           <div className="space-y-3">
             {/* Top Bar with Elevora Brand */}
             <div className="flex items-center justify-between pt-1">
-              <div className="flex items-center gap-1.5">
-                <div className="w-5 h-5 rounded-md bg-amber-400 flex items-center justify-center">
-                  <span className="text-[11px] font-black text-slate-950">E</span>
-                </div>
-                <span className="font-extrabold text-sm tracking-tight text-white font-display">Elevora</span>
-              </div>
+              <img 
+                src="/assets/elevora-logo-banner.png" 
+                alt="Elevora" 
+                className="h-6 w-auto object-contain"
+              />
               <div className="flex items-center gap-1 text-[10px] text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
                 <Sparkles className="w-3 h-3" />
                 <span>AI Live</span>
