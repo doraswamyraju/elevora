@@ -451,3 +451,4 @@ private fun DialogueBubble(speaker: String, text: String, isUser: Boolean) {
         }
     }
 }
+

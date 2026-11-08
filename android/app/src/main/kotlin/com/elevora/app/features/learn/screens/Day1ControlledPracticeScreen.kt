@@ -179,3 +179,4 @@ fun Day1ControlledPracticeScreen(
         Spacer(modifier = Modifier.height(10.dp))
     }
 }
+
