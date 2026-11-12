@@ -26,6 +26,7 @@ import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -68,17 +69,41 @@ fun Day1RolePlayScreen(
     val curriculum = Day1Curriculum()
     var mode by remember { mutableStateOf(RolePlayMode.WITH_AI) }
 
-    // Voice State
+    // Live AI Connection State
+    var isAiConnected by remember { mutableStateOf<Boolean?>(null) }
+    var isCheckingConnection by remember { mutableStateOf(false) }
+
+    // Voice State - strictly live, no dummy defaults
     var isListening by remember { mutableStateOf(false) }
     var spokenVoiceText by remember { mutableStateOf("") }
     var voiceErrorMessage by remember { mutableStateOf<String?>(null) }
     var aiReply by remember { mutableStateOf<String?>(null) }
-    var aiFluencyScore by remember { mutableStateOf("4.5 / 5.0") }
+    var aiFluencyScore by remember { mutableStateOf<String?>(null) }
+    var aiAccuracyScore by remember { mutableStateOf<String?>(null) }
     var improvedVersion by remember { mutableStateOf<String?>(null) }
+    var trainerObservation by remember { mutableStateOf<String?>(null) }
+    var vocabularyUsed by remember { mutableStateOf<List<String>>(emptyList()) }
     var isEvaluating by remember { mutableStateOf(false) }
-    var isSpeakingTts by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
+
+    fun verifyAiConnection() {
+        isCheckingConnection = true
+        coroutineScope.launch {
+            val connected = ElevoraApiClient.checkAiConnection()
+            isAiConnected = connected
+            isCheckingConnection = false
+            if (connected) {
+                voiceErrorMessage = null
+            } else if (voiceErrorMessage == null) {
+                voiceErrorMessage = "AI Coach offline. Please verify internet connection."
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        verifyAiConnection()
+    }
 
     // 1. Text-To-Speech for AI spoken responses
     var textToSpeech by remember { mutableStateOf<TextToSpeech?>(null) }
@@ -96,25 +121,44 @@ fun Day1RolePlayScreen(
         }
     }
 
-    // Function to evaluate speech and speak back
+    // Function to evaluate speech and speak back via live AI
     fun triggerAiEvaluation(speechText: String) {
         if (speechText.isBlank()) return
-        // Stop any currently playing TTS before processing new speech
         textToSpeech?.stop()
         isEvaluating = true
+        voiceErrorMessage = null
+
         coroutineScope.launch {
             val eval = ElevoraApiClient.sendSpeakingPractice(
                 userSpokenText = speechText,
                 targetScenario = "Module 1, Lesson 1: Professional Self-Introduction",
                 apiKey = null
             )
-            aiReply = eval.rolePlayReply
-            aiFluencyScore = "${eval.fluencyScore} / 5.0"
-            improvedVersion = eval.improvedAlternative
             isEvaluating = false
 
-            // Automatically speak the AI response out loud for real conversation
-            textToSpeech?.speak(eval.rolePlayReply, TextToSpeech.QUEUE_FLUSH, null, "ai_reply")
+            if (eval.isSuccess && !eval.rolePlayReply.isNullOrBlank()) {
+                isAiConnected = true
+                aiReply = eval.rolePlayReply
+                aiFluencyScore = eval.fluencyScore?.let { "$it / 5.0" }
+                aiAccuracyScore = eval.accuracyScore?.let { "$it / 5.0" }
+                improvedVersion = eval.improvedAlternative
+                trainerObservation = eval.trainerObservation
+                vocabularyUsed = eval.vocabularyUsed
+                voiceErrorMessage = null
+
+                // Speak the live AI response out loud
+                textToSpeech?.speak(eval.rolePlayReply, TextToSpeech.QUEUE_FLUSH, null, "ai_reply")
+            } else {
+                // Not connected or AI failure - completely omit any dummy data
+                isAiConnected = false
+                aiReply = null
+                aiFluencyScore = null
+                aiAccuracyScore = null
+                improvedVersion = null
+                trainerObservation = null
+                vocabularyUsed = emptyList()
+                voiceErrorMessage = eval.errorMessage ?: "AI Coach not connected. Live AI required."
+            }
         }
     }
 
@@ -129,7 +173,7 @@ fun Day1RolePlayScreen(
                 triggerAiEvaluation(completeSentence)
             },
             onPartial = { liveSpeechDraft ->
-                spokenVoiceText = liveSpeechDraft // Update screen text in real-time without interrupting
+                spokenVoiceText = liveSpeechDraft
                 voiceErrorMessage = null
             },
             onError = { errMsg ->
@@ -241,7 +285,7 @@ fun Day1RolePlayScreen(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(10.dp))
-                .background(if (mode == RolePlayMode.WITHOUT_AI) ElevoraColors.GoldPrimary else Color.Transparent)
+                    .background(if (mode == RolePlayMode.WITHOUT_AI) ElevoraColors.GoldPrimary else Color.Transparent)
                     .clickable { mode = RolePlayMode.WITHOUT_AI }
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center
@@ -353,7 +397,7 @@ fun Day1RolePlayScreen(
                 }
             }
         } else {
-            // Mode B: Interactive Voice-First AI Coach
+            // Mode B: Interactive Voice-First AI Coach (Live AI Only, No Fallbacks)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -366,13 +410,73 @@ fun Day1RolePlayScreen(
                             )
                         )
                     )
-                    .border(1.5.dp, ElevoraColors.GoldPrimary.copy(alpha = 0.5f), RoundedCornerShape(22.dp))
+                    .border(
+                        1.5.dp,
+                        if (isAiConnected == false) Color(0xFFEF4444).copy(alpha = 0.6f) else ElevoraColors.GoldPrimary.copy(alpha = 0.5f),
+                        RoundedCornerShape(22.dp)
+                    )
                     .padding(20.dp)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    // Live AI Connection Badge
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                when {
+                                    isCheckingConnection -> Color(0xFF1E293B)
+                                    isAiConnected == true -> Color(0xFF064E3B)
+                                    else -> Color(0xFF450A0A)
+                                }
+                            )
+                            .border(
+                                1.dp,
+                                when {
+                                    isCheckingConnection -> Color(0xFF475569)
+                                    isAiConnected == true -> Color(0xFF10B981)
+                                    else -> Color(0xFFEF4444)
+                                },
+                                RoundedCornerShape(20.dp)
+                            )
+                            .padding(horizontal = 12.dp, vertical = 5.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    when {
+                                        isCheckingConnection -> Color(0xFFFBBF24)
+                                        isAiConnected == true -> Color(0xFF10B981)
+                                        else -> Color(0xFFEF4444)
+                                    }
+                                )
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = when {
+                                isCheckingConnection -> "Connecting to Live AI..."
+                                isAiConnected == true -> "LIVE AI COACH CONNECTED"
+                                else -> "NOT CONNECTED"
+                            },
+                            color = when {
+                                isCheckingConnection -> Color(0xFFFDE68A)
+                                isAiConnected == true -> Color(0xFFA7F3D0)
+                                else -> Color(0xFFFECACA)
+                            },
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 0.6.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     Text(
                         text = "Live Voice Speaking Assessment",
                         color = ElevoraColors.TextPrimary,
@@ -381,12 +485,79 @@ fun Day1RolePlayScreen(
                     )
 
                     Text(
-                        text = "Tap the microphone, introduce yourself, and the coach will converse with you via voice.",
-                        color = ElevoraColors.TextSecondary,
+                        text = if (isAiConnected == false) {
+                            "Live Voice Coach requires an active AI connection. No dummy fallback data is used."
+                        } else {
+                            "Tap the microphone, introduce yourself, and the coach will converse with you via live voice."
+                        },
+                        color = if (isAiConnected == false) Color(0xFFFCA5A5) else ElevoraColors.TextSecondary,
                         fontSize = 11.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 4.dp, bottom = 18.dp)
                     )
+
+                    if (isAiConnected == false) {
+                        // Not connected banner with reconnect action
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFF2B1117))
+                                .border(1.dp, Color(0xFFDC2626).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                                .padding(12.dp)
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "⚠️ Live AI Coach Offline",
+                                    color = Color(0xFFFCA5A5),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = voiceErrorMessage ?: "Cannot reach live AI server. Please verify internet connectivity.",
+                                    color = ElevoraColors.TextSecondary,
+                                    fontSize = 11.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Button(
+                                    onClick = {
+                                        voiceErrorMessage = null
+                                        verifyAiConnection()
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = ElevoraColors.GoldPrimary,
+                                        contentColor = ElevoraColors.DeepNavy
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                                ) {
+                                    if (isCheckingConnection) {
+                                        CircularProgressIndicator(
+                                            color = ElevoraColors.DeepNavy,
+                                            modifier = Modifier.size(16.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Default.Refresh,
+                                            contentDescription = "Retry",
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                    }
+                                    Text(
+                                        text = "Retry Connection",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
                     // Big Animated Voice Capture Mic Button
                     Box(
@@ -394,12 +565,22 @@ fun Day1RolePlayScreen(
                             .size(76.dp)
                             .scale(if (isListening) pulseScale else 1f)
                             .clip(CircleShape)
-                            .background(if (isListening) Color(0xFFDC2626) else ElevoraColors.GoldPrimary)
+                            .background(
+                                when {
+                                    isListening -> Color(0xFFDC2626)
+                                    isAiConnected == false -> Color(0xFF475569)
+                                    else -> ElevoraColors.GoldPrimary
+                                }
+                            )
                             .clickable {
                                 if (isListening) {
                                     speechRecognizer?.stopListening()
                                 } else {
-                                    startVoiceCapture()
+                                    if (isAiConnected == false) {
+                                        verifyAiConnection()
+                                    } else {
+                                        startVoiceCapture()
+                                    }
                                 }
                             },
                         contentAlignment = Alignment.Center
@@ -407,7 +588,7 @@ fun Day1RolePlayScreen(
                         Icon(
                             imageVector = if (isListening) Icons.Default.Stop else Icons.Default.Mic,
                             contentDescription = "Speak to AI",
-                            tint = if (isListening) Color.White else ElevoraColors.DeepNavy,
+                            tint = if (isListening) Color.White else if (isAiConnected == false) Color(0xFF94A3B8) else ElevoraColors.DeepNavy,
                             modifier = Modifier.size(36.dp)
                         )
                     }
@@ -416,15 +597,15 @@ fun Day1RolePlayScreen(
 
                     Text(
                         text = when {
-                            voiceErrorMessage != null -> voiceErrorMessage!!
                             isListening -> "Listening to your voice... Speak now"
                             isEvaluating -> "Assessing your speech & fluency with live AI..."
+                            isAiConnected == false -> "AI Coach not connected. Tap Retry to connect."
                             spokenVoiceText.isNotBlank() -> "Tap mic to speak again"
                             else -> "Tap microphone to speak"
                         },
                         color = when {
-                            voiceErrorMessage != null -> ElevoraColors.AlertAmber
                             isListening -> Color(0xFFFCA5A5)
+                            isAiConnected == false -> Color(0xFFFCA5A5)
                             else -> ElevoraColors.GoldLight
                         },
                         fontSize = 12.sp,
@@ -471,8 +652,8 @@ fun Day1RolePlayScreen(
                 }
             }
 
-            // AI Verbal Reply & Assessment Breakdown
-            if (aiReply != null) {
+            // Real AI Verbal Reply & Assessment Breakdown (Strictly live, never dummy)
+            if (aiReply != null && isAiConnected == true) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Box(
@@ -512,18 +693,20 @@ fun Day1RolePlayScreen(
                                 }
                             }
 
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(ElevoraColors.GoldPrimary.copy(alpha = 0.15f))
-                                    .padding(horizontal = 8.dp, vertical = 3.dp)
-                            ) {
-                                Text(
-                                    text = "Fluency: $aiFluencyScore",
-                                    color = ElevoraColors.GoldPrimary,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Black
-                                )
+                            if (aiFluencyScore != null) {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(ElevoraColors.GoldPrimary.copy(alpha = 0.15f))
+                                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                                ) {
+                                    Text(
+                                        text = "Fluency: $aiFluencyScore",
+                                        color = ElevoraColors.GoldPrimary,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Black
+                                    )
+                                }
                             }
                         }
 
@@ -537,7 +720,7 @@ fun Day1RolePlayScreen(
                             lineHeight = 18.sp
                         )
 
-                        if (improvedVersion != null) {
+                        if (!improvedVersion.isNullOrBlank()) {
                             Spacer(modifier = Modifier.height(12.dp))
                             HorizontalDivider(color = ElevoraColors.CardStroke)
                             Spacer(modifier = Modifier.height(10.dp))
@@ -557,6 +740,24 @@ fun Day1RolePlayScreen(
                                 color = ElevoraColors.TextPrimary,
                                 fontSize = 12.sp,
                                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                lineHeight = 16.sp
+                            )
+                        }
+
+                        if (!trainerObservation.isNullOrBlank()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = "TRAINER OBSERVATION:",
+                                color = ElevoraColors.GoldLight,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 0.8.sp
+                            )
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Text(
+                                text = trainerObservation!!,
+                                color = ElevoraColors.TextSecondary,
+                                fontSize = 12.sp,
                                 lineHeight = 16.sp
                             )
                         }

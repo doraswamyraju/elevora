@@ -52,6 +52,7 @@ export function App() {
     tokens: number;
     cost: number;
   } | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +71,7 @@ export function App() {
 
   const handleSendToAi = async () => {
     setIsAiLoading(true);
+    setAiError(null);
     try {
       const res = await fetch('/api/ai/practice-feedback', {
         method: 'POST',
@@ -80,24 +82,21 @@ export function App() {
         })
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && !data.isSimulated) {
         setAiFeedback({
           reply: data.rolePlayReply,
-          fluency: data.feedback.fluencyScore,
-          improved: data.feedback.improvedAlternative,
-          tokens: data.telemetry.totalTokens,
-          cost: data.telemetry.estimatedCostUsd
+          fluency: data.feedback?.fluencyScore || 0,
+          improved: data.feedback?.improvedAlternative || '',
+          tokens: data.telemetry?.totalTokens || 0,
+          cost: data.telemetry?.estimatedCostUsd || 0
         });
+      } else {
+        setAiFeedback(null);
+        setAiError(data.message || 'Not Connected: AI Coach service is unavailable.');
       }
     } catch {
-      // Mock instant fallback simulation
-      setAiFeedback({
-        reply: "Great to meet you Priya! As our Logistics lead, could you please clarify what your main priority is for this week's rollout?",
-        fluency: 4.5,
-        improved: "Good morning! My name is Priya. I oversee the Operations department, and my primary responsibility is on-time execution.",
-        tokens: 235,
-        cost: 0.000035
-      });
+      setAiFeedback(null);
+      setAiError('Not Connected: Live AI Coach is unreachable. Please verify internet connection.');
     } finally {
       setIsAiLoading(false);
     }
@@ -717,6 +716,16 @@ export function App() {
                     <span>{isAiLoading ? "Analyzing..." : "Evaluate Managerial Introduction"}</span>
                   </button>
                 </div>
+
+                {aiError && (
+                  <div className="bg-red-950/40 border border-red-700/60 rounded-2xl p-4 text-xs text-red-200 flex items-start gap-3">
+                    <span className="text-base">⚠️</span>
+                    <div>
+                      <strong className="block text-red-300 font-bold mb-1">AI Coach Not Connected</strong>
+                      <p>{aiError}</p>
+                    </div>
+                  </div>
+                )}
 
                 {aiFeedback && (
                   <div className="bg-[#131C31] border border-[#F39C12] rounded-2xl p-5 space-y-4 shadow-[0_0_20px_rgba(243,156,18,0.15)] animate-fade-in">

@@ -146,8 +146,8 @@ private fun ExecutivePracticeTile(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        ElevoraColors.SlateCard,
-                        Color(0xFF0F1A30)
+                        Color.White,
+                        Color(0xFFF8FAFC)
                     )
                 )
             )

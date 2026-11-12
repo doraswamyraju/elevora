@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,7 +62,12 @@ fun ElevoraTopBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(ElevoraColors.DeepNavy)
+            .background(Color.White)
+            .border(
+                width = 1.dp,
+                color = ElevoraColors.CardStroke,
+                shape = androidx.compose.ui.graphics.RectangleShape
+            )
             .statusBarsPadding()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -121,8 +127,8 @@ fun ElevoraTopBar(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .background(ElevoraColors.GoldPrimary.copy(alpha = 0.12f))
-                        .border(1.dp, ElevoraColors.GoldPrimary.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+                        .background(Color(0xFFFEF3C7))
+                        .border(1.dp, Color(0xFFFDE68A), RoundedCornerShape(12.dp))
                         .padding(horizontal = 8.dp, vertical = 5.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -130,7 +136,7 @@ fun ElevoraTopBar(
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
                             text = "$streakDays",
-                            color = ElevoraColors.GoldPrimary,
+                            color = ElevoraColors.GoldAmber,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Black
                         )
@@ -143,12 +149,12 @@ fun ElevoraTopBar(
             }
 
             if (showProfileIcon) {
-                // User Initial Profile Avatar with Gold Rim
+                // User Initial Profile Avatar with Oxford Blue Rim
                 Box(
                     modifier = Modifier
                         .size(38.dp)
                         .clip(CircleShape)
-                        .background(ElevoraColors.SlateCard)
+                        .background(Color(0xFFEFF6FF))
                         .border(1.5.dp, ElevoraColors.GoldPrimary, CircleShape)
                         .clickable(onClick = onProfileClick),
                     contentAlignment = Alignment.Center

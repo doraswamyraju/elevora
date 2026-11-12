@@ -48,10 +48,10 @@ fun Day1SequenceTrackerCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
             .background(
-                Brush.linearGradient(
+                Brush.verticalGradient(
                     colors = listOf(
-                        ElevoraColors.SlateCard,
-                        Color(0xFF111E36)
+                        Color.White,
+                        Color(0xFFF8FAFC)
                     )
                 )
             )
@@ -83,13 +83,13 @@ fun Day1SequenceTrackerCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(ElevoraColors.GoldPrimary.copy(alpha = 0.15f))
-                        .border(1.dp, ElevoraColors.GoldPrimary.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
+                        .background(Color(0xFFEFF6FF))
+                        .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(10.dp))
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = "Step 5 of 7",
-                        color = ElevoraColors.GoldLight,
+                        color = ElevoraColors.GoldPrimary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -116,12 +116,12 @@ fun Day1SequenceTrackerCard(
                                 when {
                                     isDone -> ElevoraColors.EmeraldCategory
                                     isCurrent -> ElevoraColors.GoldPrimary
-                                    else -> Color(0xFF1E2B44)
+                                    else -> Color(0xFFE2E8F0)
                                 }
                             )
                             .border(
                                 width = if (isCurrent) 2.dp else 1.dp,
-                                color = if (isCurrent) ElevoraColors.GoldLight else Color.Transparent,
+                                color = if (isCurrent) Color(0xFF93C5FD) else Color.Transparent,
                                 shape = CircleShape
                             )
                             .clickable { onStepClick(i) },
@@ -137,7 +137,7 @@ fun Day1SequenceTrackerCard(
                             isCurrent -> Icon(
                                 imageVector = Icons.Default.PlayArrow,
                                 contentDescription = null,
-                                tint = ElevoraColors.DeepNavy,
+                                tint = Color.White,
                                 modifier = Modifier.size(15.dp)
                             )
                             else -> Text(
@@ -157,7 +157,7 @@ fun Day1SequenceTrackerCard(
                                 .padding(horizontal = 2.dp)
                                 .background(
                                     if (i < currentStepIndex) ElevoraColors.EmeraldCategory
-                                    else Color(0xFF1C273C)
+                                    else Color(0xFFE2E8F0)
                                 )
                         )
                     }
@@ -171,8 +171,8 @@ fun Day1SequenceTrackerCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFF142442))
-                    .border(1.dp, ElevoraColors.GoldPrimary.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                    .background(Color(0xFFEFF6FF))
+                    .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(16.dp))
                     .clickable { onStepClick(currentStepIndex) }
                     .padding(14.dp)
             ) {
@@ -226,7 +226,7 @@ fun Day1SequenceTrackerCard(
                         Icon(
                             imageVector = Icons.Default.ArrowForward,
                             contentDescription = "Start Next Step",
-                            tint = ElevoraColors.DeepNavy,
+                            tint = Color.White,
                             modifier = Modifier.size(18.dp)
                         )
                     }

@@ -201,6 +201,32 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
+app.get('/api/health', (req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    aiEnabled: Boolean(process.env.GEMINI_API_KEY),
+    service: 'Elevora LMS Backend API',
+    port: PORT,
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/ai/status', (req: Request, res: Response) => {
+  const hasKey = Boolean(process.env.GEMINI_API_KEY);
+  if (!hasKey) {
+    return res.status(503).json({
+      success: false,
+      connected: false,
+      message: 'AI Coach is not connected: Gemini API key is missing.'
+    });
+  }
+  return res.json({
+    success: true,
+    connected: true,
+    message: 'AI Coach is connected and live'
+  });
+});
+
 // Auth endpoint
 app.post('/api/auth/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -301,19 +327,10 @@ app.post('/api/ai/practice-feedback', async (req: Request, res: Response) => {
     }
 
     if (!keyToUse) {
-      // Deterministic high-quality response if API key is not configured yet
-      return res.json({
-        success: true,
-        isSimulated: true,
-        rolePlayReply: "Pleased to meet you! As our Operations lead, could you please clarify what your team's immediate priority is for this week's rollout?",
-        feedback: {
-          fluencyScore: 4.3,
-          accuracyScore: 4.5,
-          improvedAlternative: "Good morning! My name is Priya, and I oversee the Operations department. My primary responsibility is cross-functional delivery.",
-          vocabularyUsed: ["responsibility", "department", "operations"],
-          vocabularyMissing: ["objective", "milestone", "priority"],
-          trainerObservation: "Confident and articulate opening. Great pacing with clear enunciation."
-        }
+      return res.status(503).json({
+        success: false,
+        isSimulated: false,
+        message: 'AI Coach is not connected: Gemini API key is not configured.'
       });
     }
 
@@ -347,9 +364,9 @@ Respond ONLY with a strictly formatted JSON object:
 }
 `;
 
-    // Fallback list of models: try gemini-3.5-flash-lite, then gemini-3.5-flash
+    // Live AI models to try
     let responseText = '{}';
-    const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-3.5-flash'];
+    const modelsToTry = ['gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-3.5-flash'];
     let lastError: any = null;
 
     for (const modelName of modelsToTry) {
@@ -376,17 +393,21 @@ Respond ONLY with a strictly formatted JSON object:
     }
     const parsedData = JSON.parse(responseText);
 
+    if (!parsedData.rolePlayReply) {
+      throw new Error("AI Coach did not generate a conversational response.");
+    }
+
     return res.json({
       success: true,
       isSimulated: false,
-      rolePlayReply: parsedData.rolePlayReply || "Thank you for the update. Let's make sure we align on the next milestone.",
+      rolePlayReply: parsedData.rolePlayReply,
       feedback: {
-        fluencyScore: parsedData.fluencyScore || 4.2,
-        accuracyScore: parsedData.accuracyScore || 4.0,
-        improvedAlternative: parsedData.improvedAlternative || userSpokenText,
+        fluencyScore: parsedData.fluencyScore,
+        accuracyScore: parsedData.accuracyScore,
+        improvedAlternative: parsedData.improvedAlternative,
         vocabularyUsed: parsedData.vocabularyUsed || [],
         vocabularyMissing: parsedData.vocabularyMissing || [],
-        trainerObservation: parsedData.trainerObservation || "Polite tone with good professional presence."
+        trainerObservation: parsedData.trainerObservation || ""
       }
     });
 
@@ -394,7 +415,8 @@ Respond ONLY with a strictly formatted JSON object:
     console.error("AI Evaluation error:", err);
     return res.status(500).json({
       success: false,
-      message: err.message || "Failed to generate AI evaluation",
+      isSimulated: false,
+      message: err.message || "Failed to generate AI evaluation. AI Coach is offline.",
       error: String(err)
     });
   }

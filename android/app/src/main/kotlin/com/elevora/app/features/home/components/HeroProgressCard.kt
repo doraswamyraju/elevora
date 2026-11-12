@@ -56,27 +56,20 @@ fun HeroProgressCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(26.dp))
             .background(
-                Brush.linearGradient(
+                Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF0F1B33),
-                        Color(0xFF142444),
-                        Color(0xFF0B1426)
+                        Color(0xFFFFFFFF),
+                        Color(0xFFF8FAFC)
                     )
                 )
             )
             .border(
-                1.5.dp,
-                Brush.linearGradient(
-                    colors = listOf(
-                        ElevoraColors.GoldPrimary.copy(alpha = 0.6f),
-                        ElevoraColors.CardStroke,
-                        ElevoraColors.GoldPrimary.copy(alpha = 0.2f)
-                    )
-                ),
+                1.dp,
+                ElevoraColors.CardStroke,
                 RoundedCornerShape(26.dp)
             )
     ) {
-        // Ambient soft golden spotlight glow in background
+        // Ambient soft Oxford Blue spotlight glow in background
         Box(
             modifier = Modifier
                 .size(160.dp)
@@ -84,7 +77,7 @@ fun HeroProgressCard(
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
-                            ElevoraColors.GoldPrimary.copy(alpha = 0.18f),
+                            Color(0xFFDBEAFE).copy(alpha = 0.6f),
                             Color.Transparent
                         )
                     )
@@ -124,13 +117,13 @@ fun HeroProgressCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFF1E2E50))
-                        .border(1.dp, ElevoraColors.CardStroke, RoundedCornerShape(10.dp))
+                        .background(Color(0xFFEFF6FF))
+                        .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(10.dp))
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = weekInfo,
-                        color = ElevoraColors.GoldLight,
+                        color = ElevoraColors.GoldPrimary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -233,12 +226,12 @@ fun HeroProgressCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Luxury Button: "Continue Day 1 - Professional Introductions"
+            // Primary Action Button: "Continue Day 1 - Role-Play"
             Button(
                 onClick = onContinueClick,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = ElevoraColors.GoldPrimary,
-                    contentColor = ElevoraColors.DeepNavy
+                    contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
@@ -249,21 +242,22 @@ fun HeroProgressCard(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .background(ElevoraColors.DeepNavy),
+                        .background(Color.White.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = null,
-                        tint = ElevoraColors.GoldPrimary,
+                        tint = Color.White,
                         modifier = Modifier.size(15.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = "Continue Day 1 - Role-Play",
-                    fontWeight = FontWeight.Black,
-                    fontSize = 14.sp
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = Color.White
                 )
             }
         }
