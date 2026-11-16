@@ -55,21 +55,25 @@ object ElevoraApiClient {
         }
 
     /**
-     * Checks if the Live AI Coach service is online and accessible.
+     * Checks if the Live AI Coach service is online, live, and configured with a valid API key.
      */
     suspend fun checkAiConnection(): Boolean = withContext(Dispatchers.IO) {
         for (baseUrl in candidateUrls) {
             try {
-                val url = URL("$baseUrl/api/course/day1")
+                val url = URL("$baseUrl/api/ai/status")
                 val connection = (url.openConnection() as HttpURLConnection).apply {
                     requestMethod = "GET"
                     setRequestProperty("Accept", "application/json")
                     setRequestProperty("User-Agent", "Elevora/1.0 (Android; ${Build.MANUFACTURER} ${Build.MODEL})")
-                    connectTimeout = 10000
-                    readTimeout = 10000
+                    connectTimeout = 8000
+                    readTimeout = 8000
                 }
                 if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                    return@withContext true
+                    val resp = connection.inputStream.bufferedReader().use { it.readText() }
+                    val json = JSONObject(resp)
+                    if (json.optBoolean("connected", false)) {
+                        return@withContext true
+                    }
                 }
             } catch (_: Exception) {
                 // Continue to next candidate URL

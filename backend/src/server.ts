@@ -400,34 +400,47 @@ Respond ONLY with a strictly formatted JSON object:
 }
 `;
 
-    // Live AI models to try
+    // Live AI models to try: prioritize fastest reliable model first
     let responseText = '{}';
-    const modelsToTry = ['gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-3.5-flash'];
+    const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-3.5-flash'];
     let lastError: any = null;
 
     for (const modelName of modelsToTry) {
       try {
-        const response = await ai.models.generateContent({
+        console.log(`[AI Coach] Generating response with ${modelName} for language: ${selectedLang}...`);
+        // Wrap model generation in a strict 8-second timeout per attempt to prevent gateway timeouts
+        const modelPromise = ai.models.generateContent({
           model: modelName,
           contents: prompt,
           config: {
             responseMimeType: 'application/json'
           }
         });
-        if (response.text) {
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout of 8000ms exceeded for model ${modelName}`)), 8000)
+        );
+
+        const response = await Promise.race([modelPromise, timeoutPromise]);
+        if (response && response.text) {
           responseText = response.text;
+          console.log(`[AI Coach] Generated successfully with ${modelName}`);
           break;
         }
       } catch (mErr: any) {
         lastError = mErr;
-        console.warn(`Model ${modelName} failed, trying next...`, mErr.message);
+        console.warn(`[AI Coach] Model ${modelName} failed or timed out:`, mErr.message);
       }
     }
 
     if (responseText === '{}' && lastError) {
       throw lastError;
     }
-    const parsedData = JSON.parse(responseText);
+
+    let cleanedText = responseText.trim();
+    if (cleanedText.startsWith('```')) {
+      cleanedText = cleanedText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+    }
+    const parsedData = JSON.parse(cleanedText);
 
     if (!parsedData.rolePlayReply) {
       throw new Error("AI Coach did not generate a conversational response.");
