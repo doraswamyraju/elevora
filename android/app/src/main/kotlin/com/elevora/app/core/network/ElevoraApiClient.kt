@@ -3,11 +3,17 @@ package com.elevora.app.core.network
 import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.net.ssl.SSLException
+
+data class ConversationMessage(
+    val speaker: String, // "user" or "assistant"
+    val text: String
+)
 
 data class AiSpeakingEvaluation(
     val rolePlayReply: String? = null,
@@ -88,6 +94,7 @@ object ElevoraApiClient {
         userSpokenText: String,
         targetScenario: String = "Module 1, Lesson 1: Professional Self-Introduction",
         language: String = "auto",
+        conversationHistory: List<ConversationMessage> = emptyList(),
         apiKey: String? = null
     ): AiSpeakingEvaluation = withContext(Dispatchers.IO) {
         if (userSpokenText.isBlank()) {
@@ -117,6 +124,16 @@ object ElevoraApiClient {
                     put("userSpokenText", userSpokenText)
                     put("scenarioContext", targetScenario)
                     put("language", language)
+                    if (conversationHistory.isNotEmpty()) {
+                        val historyArr = JSONArray()
+                        for (turn in conversationHistory) {
+                            historyArr.put(JSONObject().apply {
+                                put("speaker", turn.speaker)
+                                put("text", turn.text)
+                            })
+                        }
+                        put("conversationHistory", historyArr)
+                    }
                     if (!apiKey.isNullOrBlank()) {
                         put("apiKey", apiKey)
                     }

@@ -51,6 +51,7 @@ import com.elevora.app.R
 import com.elevora.app.core.designsystem.colors.ElevoraColors
 import com.elevora.app.core.designsystem.components.buttons.ElevoraPrimaryButton
 import com.elevora.app.core.designsystem.components.cards.ElevoraGlassCard
+import com.elevora.app.core.network.ConversationMessage
 import com.elevora.app.core.network.ElevoraApiClient
 import com.elevora.app.core.speech.ElevoraSpeechRecognizer
 import com.elevora.app.features.learn.model.Day1Curriculum
@@ -120,6 +121,10 @@ fun Day1RolePlayScreen(
     var isSessionConcluding by remember { mutableStateOf(false) }
     var detectedLanguageName by remember { mutableStateOf("Auto-Detecting") }
     val mainHandler = remember { Handler(Looper.getMainLooper()) }
+
+    // Multi-turn conversation turns for realistic conversational memory
+    val conversationTurns = remember { mutableStateListOf<ConversationMessage>() }
+    val initialPriyaGreeting = "Good morning! Welcome to the team. My name is Priya Sharma, and I oversee the Operations department. Which department are you joining, and what is your role?"
 
     // Voice State - strictly live, no dummy defaults
     var isListening by remember { mutableStateOf(false) }
@@ -220,11 +225,15 @@ fun Day1RolePlayScreen(
         isEvaluating = true
         voiceErrorMessage = null
 
+        // Add learner's turn to conversation history
+        conversationTurns.add(ConversationMessage("user", speechText))
+
         coroutineScope.launch {
             val eval = ElevoraApiClient.sendSpeakingPractice(
                 userSpokenText = speechText,
                 targetScenario = "Module 1, Lesson 1: Professional Self-Introduction",
                 language = "auto",
+                conversationHistory = conversationTurns.toList(),
                 apiKey = null
             )
             isEvaluating = false
@@ -238,6 +247,9 @@ fun Day1RolePlayScreen(
                 trainerObservation = eval.trainerObservation
                 vocabularyUsed = eval.vocabularyUsed
                 voiceErrorMessage = null
+
+                // Add Priya's reply to conversation history
+                conversationTurns.add(ConversationMessage("assistant", eval.rolePlayReply))
 
                 val detectedLabel = resolveLanguageDisplay(eval.detectedLanguage, eval.rolePlayReply)
                 detectedLanguageName = detectedLabel
@@ -342,7 +354,14 @@ fun Day1RolePlayScreen(
         isSessionActive = true
         isSessionConcluding = false
         voiceErrorMessage = null
-        startVoiceCapture()
+
+        if (conversationTurns.isEmpty()) {
+            conversationTurns.add(ConversationMessage("assistant", initialPriyaGreeting))
+            aiReply = initialPriyaGreeting
+            speakAiResponse(initialPriyaGreeting, "en")
+        } else {
+            triggerVoiceCaptureAction?.invoke()
+        }
     }
 
     fun endLiveSession() {
@@ -635,6 +654,65 @@ fun Day1RolePlayScreen(
                         modifier = Modifier.padding(top = 4.dp, bottom = 14.dp)
                     )
 
+                    // Dedicated Lesson 1 Persona Card: Priya Sharma
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0xFF0B132B))
+                            .border(1.dp, ElevoraColors.GoldPrimary.copy(alpha = 0.35f), RoundedCornerShape(14.dp))
+                            .padding(12.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(42.dp)
+                                    .clip(CircleShape)
+                                    .background(ElevoraColors.GoldPrimary),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "PS",
+                                    color = ElevoraColors.DeepNavy,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 15.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "Priya Sharma",
+                                        color = ElevoraColors.TextPrimary,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(ElevoraColors.GoldPrimary.copy(alpha = 0.15f))
+                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(
+                                            text = "SENIOR DIRECTOR",
+                                            color = ElevoraColors.GoldPrimary,
+                                            fontSize = 8.sp,
+                                            fontWeight = FontWeight.Black
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = "Operations Lead • Meeting you in the corporate office",
+                                    color = ElevoraColors.TextSecondary,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
                     // Dynamic Language Auto-Detection Badge
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -826,6 +904,23 @@ fun Day1RolePlayScreen(
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
                             )
+                        }
+                    }
+
+                    // Multi-turn Live Dialogue History
+                    if (conversationTurns.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            conversationTurns.takeLast(4).forEach { turn ->
+                                DialogueBubble(
+                                    speaker = if (turn.speaker == "user") "You (Learner):" else "Priya Sharma (Operations):",
+                                    text = turn.text,
+                                    isUser = turn.speaker == "user"
+                                )
+                            }
                         }
                     }
 

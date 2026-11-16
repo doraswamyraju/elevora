@@ -262,7 +262,7 @@ app.get('/api/course/day1', (req: Request, res: Response) => {
 // AI Practice Partner Endpoint: Evaluates learner in real-time based on the specific module & lesson
 app.post('/api/ai/practice-feedback', async (req: Request, res: Response) => {
   try {
-    const { userSpokenText, moduleNumber, lessonId, scenarioContext, language } = req.body;
+    const { userSpokenText, moduleNumber, lessonId, scenarioContext, language, conversationHistory } = req.body;
     const keyToUse = process.env.GEMINI_API_KEY || req.body.apiKey;
 
     if (!userSpokenText || userSpokenText.trim() === '') {
@@ -281,6 +281,30 @@ app.post('/api/ai/practice-feedback', async (req: Request, res: Response) => {
       "Let's look at the best solution.",
       "I'd like to make sure we agree on the next step."
     ];
+
+    // Dedicated Lesson 1 Persona & Setting
+    let personaPrompt = '';
+    if (currentModuleNum === 1) {
+      personaPrompt = `
+AI PERSONA: Priya Sharma, Senior Operations Director at an enterprise organization.
+PERSONALITY & TONE: Warm, executive, approachable, observant, articulate corporate leader.
+SETTING: You are in a modern corporate office meeting room / 1-on-1 cross-functional sync. You are meeting the learner (a newly joined colleague or department manager) for the first time.
+CONVERSATIONAL GOALS:
+1. Warmly connect with the learner as Priya Sharma, Senior Director of Operations.
+2. Inquire about the learner's department, their specific position/role, and their day-to-day responsibilities.
+3. Inquire about their professional background/experience in the industry and key objectives for this quarter.
+4. Naturally weave in and prompt target vocabulary words: ["role", "department", "experience", "responsibility", "position", "team", "background", "objective"].
+5. Maintain natural conversational continuity. Do not give generic corporate speeches. Respond like an authentic, high-level corporate peer having a friendly yet professional discussion.
+`;
+    }
+
+    let historyContext = '';
+    if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+      historyContext = `
+CONVERSATION HISTORY SO FAR:
+${conversationHistory.map((t: any) => `${t.speaker === 'user' ? 'Learner' : 'Priya Sharma (You)'}: "${t.text}"`).join('\n')}
+`;
+    }
 
     if (currentModuleNum === 2) {
       targetScenarioDesc = "Module 2: Daily Standups, Cross-Functional Syncs & Task Delegation.";
@@ -393,25 +417,29 @@ COACHING LANGUAGE: ENGLISH
 3. 'isSessionConcluding': boolean, true if learner is wrapping up.`;
     }
 
-    // Call Google GenAI SDK with pedagogical and regional language prompt
+    // Call Google GenAI SDK with pedagogical persona and multi-turn conversational prompt
     const ai = new GoogleGenAI({ apiKey: keyToUse });
     const prompt = `
-You are the senior executive communication coach for the Elevora Managerial English Programme.
+You are Priya Sharma, Senior Operations Director, role-playing in the Elevora Managerial English Programme.
 Learner's current curriculum context: ${targetScenarioDesc}
 Target vocabulary words for this module: ${JSON.stringify(targetVocabulary)}
 Target professional phrases: ${JSON.stringify(targetPhrases)}
 
-The learner said: "${userSpokenText}"
+${personaPrompt}
+
+${historyContext ? historyContext : 'This is the initial greeting and introduction exchange.'}
+
+The learner just said: "${userSpokenText}"
 
 ${languageInstruction}
 
 Your task:
-1. Act as the professional conversation partner in this exact workplace context and respond with natural dialogue (max 2 sentences) in 'rolePlayReply'.
+1. Respond as Priya Sharma with natural, executive dialogue (1 to 2 sentences) in 'rolePlayReply', directly building upon what the learner said in the conversation history and steering toward roles, background, or next steps.
 2. Rate their Fluency from 1.0 to 5.0 (natural pacing, confidence, minimal hesitation).
 3. Rate their Accuracy from 1.0 to 5.0 (grammar, word order, preposition precision).
 4. Provide an 'improvedAlternative' showing an executive, highly polished way to say what they meant.
-5. Identify which target vocabulary words they used vs missed.
-6. Provide one actionable 'trainerObservation' for immediate improvement.
+5. Identify which target vocabulary words they used vs missed from: ${JSON.stringify(targetVocabulary)}.
+6. Provide one actionable 'trainerObservation' for immediate improvement in their executive communication and vocabulary.
 
 Respond ONLY with a strictly formatted JSON object:
 {
