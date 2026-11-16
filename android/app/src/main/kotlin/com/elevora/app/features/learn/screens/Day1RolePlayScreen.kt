@@ -59,6 +59,21 @@ enum class RolePlayMode {
     WITH_AI
 }
 
+enum class CoachLanguage(
+    val code: String,
+    val flag: String,
+    val label: String,
+    val nativeLabel: String,
+    val ttsLocale: Locale,
+    val sttLocale: String
+) {
+    TELUGU("te", "🇮🇳", "Telugu", "తెలుగు", Locale("te", "IN"), "te-IN"),
+    ENGLISH("en", "🇬🇧", "English", "English", Locale("en", "IN"), "en-IN"),
+    HINDI("hi", "🇮🇳", "Hindi", "हिंदी", Locale("hi", "IN"), "hi-IN"),
+    TAMIL("ta", "🇮🇳", "Tamil", "தமிழ்", Locale("ta", "IN"), "ta-IN"),
+    KANNADA("kn", "🇮🇳", "Kannada", "ಕನ್ನಡ", Locale("kn", "IN"), "kn-IN")
+}
+
 @Composable
 fun Day1RolePlayScreen(
     onBackClick: () -> Unit = {},
@@ -68,6 +83,7 @@ fun Day1RolePlayScreen(
     val context = LocalContext.current
     val curriculum = Day1Curriculum()
     var mode by remember { mutableStateOf(RolePlayMode.WITH_AI) }
+    var selectedLanguage by remember { mutableStateOf(CoachLanguage.TELUGU) }
 
     // Live AI Connection State
     var isAiConnected by remember { mutableStateOf<Boolean?>(null) }
@@ -105,13 +121,20 @@ fun Day1RolePlayScreen(
         verifyAiConnection()
     }
 
-    // 1. Text-To-Speech for AI spoken responses
+    // 1. Text-To-Speech for AI spoken responses (Supports Telugu, Hindi, Tamil, Kannada, English)
     var textToSpeech by remember { mutableStateOf<TextToSpeech?>(null) }
     DisposableEffect(Unit) {
         var ttsInstance: TextToSpeech? = null
         ttsInstance = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                ttsInstance?.language = Locale.UK
+                try {
+                    val res = ttsInstance?.setLanguage(Locale("te", "IN"))
+                    if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        ttsInstance?.setLanguage(Locale("en", "IN"))
+                    }
+                } catch (_: Exception) {
+                    ttsInstance?.language = Locale.UK
+                }
             }
         }
         textToSpeech = ttsInstance
@@ -119,6 +142,20 @@ fun Day1RolePlayScreen(
             ttsInstance.stop()
             ttsInstance.shutdown()
         }
+    }
+
+    // Speak AI response in the currently selected language
+    fun speakAiResponse(text: String) {
+        if (text.isBlank()) return
+        try {
+            val langResult = textToSpeech?.setLanguage(selectedLanguage.ttsLocale)
+            if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
+                textToSpeech?.setLanguage(Locale("en", "IN"))
+            }
+        } catch (_: Exception) {
+            textToSpeech?.language = Locale.UK
+        }
+        textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "ai_reply")
     }
 
     // Function to evaluate speech and speak back via live AI
@@ -132,6 +169,7 @@ fun Day1RolePlayScreen(
             val eval = ElevoraApiClient.sendSpeakingPractice(
                 userSpokenText = speechText,
                 targetScenario = "Module 1, Lesson 1: Professional Self-Introduction",
+                language = selectedLanguage.code,
                 apiKey = null
             )
             isEvaluating = false
@@ -146,8 +184,8 @@ fun Day1RolePlayScreen(
                 vocabularyUsed = eval.vocabularyUsed
                 voiceErrorMessage = null
 
-                // Speak the live AI response out loud
-                textToSpeech?.speak(eval.rolePlayReply, TextToSpeech.QUEUE_FLUSH, null, "ai_reply")
+                // Speak the live AI response out loud in the selected regional language or English
+                speakAiResponse(eval.rolePlayReply)
             } else {
                 // Not connected or AI failure - completely omit any dummy data
                 isAiConnected = false
@@ -196,7 +234,7 @@ fun Day1RolePlayScreen(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            speechRecognizer?.startListening()
+            speechRecognizer?.startListening(selectedLanguage.sttLocale)
         }
     }
 
@@ -207,7 +245,7 @@ fun Day1RolePlayScreen(
         ) == PackageManager.PERMISSION_GRANTED
 
         if (hasPermission) {
-            speechRecognizer?.startListening()
+            speechRecognizer?.startListening(selectedLanguage.sttLocale)
         } else {
             permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         }
@@ -488,13 +526,72 @@ fun Day1RolePlayScreen(
                         text = if (isAiConnected == false) {
                             "Live Voice Coach requires an active AI connection. No dummy fallback data is used."
                         } else {
-                            "Tap the microphone, introduce yourself, and the coach will converse with you via live voice."
+                            "Selected: ${selectedLanguage.label} (${selectedLanguage.nativeLabel}). Tap microphone to converse in English or ${selectedLanguage.label}."
                         },
                         color = if (isAiConnected == false) Color(0xFFFCA5A5) else ElevoraColors.TextSecondary,
                         fontSize = 11.sp,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 4.dp, bottom = 18.dp)
+                        modifier = Modifier.padding(top = 4.dp, bottom = 14.dp)
                     )
+
+                    // Language Selector Bar
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "COACH LANGUAGE / సంభాషణ భాష",
+                            color = ElevoraColors.GoldPrimary,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 0.8.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color(0xFFF1F5F9))
+                                .border(1.dp, ElevoraColors.CardStroke, RoundedCornerShape(14.dp))
+                                .padding(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            CoachLanguage.values().forEach { lang ->
+                                val isSelected = selectedLanguage == lang
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (isSelected) ElevoraColors.GoldPrimary else Color.Transparent)
+                                        .clickable {
+                                            selectedLanguage = lang
+                                            try {
+                                                textToSpeech?.setLanguage(lang.ttsLocale)
+                                            } catch (_: Exception) {}
+                                        }
+                                        .padding(vertical = 6.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = "${lang.flag} ${lang.label}",
+                                            color = if (isSelected) Color.White else ElevoraColors.TextPrimary,
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium
+                                        )
+                                        Text(
+                                            text = lang.nativeLabel,
+                                            color = if (isSelected) Color.White.copy(alpha = 0.9f) else ElevoraColors.TextSecondary,
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Normal
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     if (isAiConnected == false) {
                         // Not connected banner with reconnect action
@@ -672,7 +769,7 @@ fun Day1RolePlayScreen(
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "Colleague Spoken Response",
+                                    text = "Coach Spoken Response (${selectedLanguage.nativeLabel})",
                                     color = ElevoraColors.TextPrimary,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp
@@ -680,7 +777,7 @@ fun Day1RolePlayScreen(
                                 Spacer(modifier = Modifier.width(6.dp))
                                 IconButton(
                                     onClick = {
-                                        textToSpeech?.speak(aiReply, TextToSpeech.QUEUE_FLUSH, null, "replay")
+                                        aiReply?.let { speakAiResponse(it) }
                                     },
                                     modifier = Modifier.size(28.dp)
                                 ) {

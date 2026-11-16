@@ -103,12 +103,14 @@ class ElevoraSpeechRecognizer(
 
     /**
      * Start listening to learner voice.
-     * Generous silence timeout allows natural pauses without interrupting the learner.
+     * Supports regional Indian languages (Telugu te-IN, Hindi hi-IN, Tamil ta-IN, etc.) and English.
      */
-    fun startListening() {
+    fun startListening(languageCode: String = "en-IN") {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault().toLanguageTag())
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, languageCode)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, languageCode)
+            putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES", arrayOf(languageCode, "en-IN", Locale.getDefault().toLanguageTag()))
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
             // Allow 3 seconds of pause before considering speech complete

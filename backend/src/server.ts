@@ -262,7 +262,7 @@ app.get('/api/course/day1', (req: Request, res: Response) => {
 // AI Practice Partner Endpoint: Evaluates learner in real-time based on the specific module & lesson
 app.post('/api/ai/practice-feedback', async (req: Request, res: Response) => {
   try {
-    const { userSpokenText, moduleNumber, lessonId, scenarioContext } = req.body;
+    const { userSpokenText, moduleNumber, lessonId, scenarioContext, language } = req.body;
     const keyToUse = process.env.GEMINI_API_KEY || req.body.apiKey;
 
     if (!userSpokenText || userSpokenText.trim() === '') {
@@ -334,7 +334,41 @@ app.post('/api/ai/practice-feedback', async (req: Request, res: Response) => {
       });
     }
 
-    // Call Google GenAI SDK with the exact module pedagogical prompt
+    // Regional language instructions (Telugu, Hindi, Tamil, Kannada, English)
+    const selectedLang = (language || 'en').toLowerCase().trim();
+    let languageInstruction = '';
+
+    if (selectedLang === 'te' || selectedLang === 'telugu') {
+      languageInstruction = `
+COACHING LANGUAGE: TELUGU (తెలుగు)
+1. 'rolePlayReply': Respond naturally and conversationally in Telugu (incorporating common professional English workplace loanwords where natural in corporate offices, such as 'team', 'meeting', 'operations', 'project', etc.). Write in Telugu script.
+2. 'trainerObservation': Provide encouraging, actionable coaching guidance in Telugu script so the learner clearly understands how to improve their executive communication.
+3. 'improvedAlternative': Provide the executive, highly polished English phrasing, followed by a brief Telugu explanation in parentheses.`;
+    } else if (selectedLang === 'hi' || selectedLang === 'hindi') {
+      languageInstruction = `
+COACHING LANGUAGE: HINDI (हिंदी)
+1. 'rolePlayReply': Respond naturally and conversationally in Hindi (Devanagari script), using modern corporate conversational style.
+2. 'trainerObservation': Provide encouraging coaching feedback in Hindi script.
+3. 'improvedAlternative': Provide the polished executive English phrasing, followed by a brief Hindi explanation in parentheses.`;
+    } else if (selectedLang === 'ta' || selectedLang === 'tamil') {
+      languageInstruction = `
+COACHING LANGUAGE: TAMIL (தமிழ்)
+1. 'rolePlayReply': Respond naturally and conversationally in Tamil script.
+2. 'trainerObservation': Provide encouraging coaching feedback in Tamil script.
+3. 'improvedAlternative': Provide the polished executive English phrasing, followed by a brief Tamil explanation in parentheses.`;
+    } else if (selectedLang === 'kn' || selectedLang === 'kannada') {
+      languageInstruction = `
+COACHING LANGUAGE: KANNADA (ಕನ್ನಡ)
+1. 'rolePlayReply': Respond naturally and conversationally in Kannada script.
+2. 'trainerObservation': Provide encouraging coaching feedback in Kannada script.
+3. 'improvedAlternative': Provide the polished executive English phrasing, followed by a brief Kannada explanation in parentheses.`;
+    } else {
+      languageInstruction = `
+COACHING LANGUAGE: ENGLISH
+Converse in natural, polished executive English. Provide 'rolePlayReply', 'improvedAlternative', and 'trainerObservation' in English.`;
+    }
+
+    // Call Google GenAI SDK with pedagogical and regional language prompt
     const ai = new GoogleGenAI({ apiKey: keyToUse });
     const prompt = `
 You are the senior executive communication coach for the Elevora Managerial English Programme.
@@ -344,8 +378,10 @@ Target professional phrases: ${JSON.stringify(targetPhrases)}
 
 The learner said: "${userSpokenText}"
 
+${languageInstruction}
+
 Your task:
-1. Act as the professional conversation partner in this exact workplace context and respond with natural executive dialogue (max 2 sentences).
+1. Act as the professional conversation partner in this exact workplace context and respond with natural dialogue (max 2 sentences) in 'rolePlayReply'.
 2. Rate their Fluency from 1.0 to 5.0 (natural pacing, confidence, minimal hesitation).
 3. Rate their Accuracy from 1.0 to 5.0 (grammar, word order, preposition precision).
 4. Provide an 'improvedAlternative' showing an executive, highly polished way to say what they meant.
@@ -400,6 +436,7 @@ Respond ONLY with a strictly formatted JSON object:
     return res.json({
       success: true,
       isSimulated: false,
+      language: selectedLang,
       rolePlayReply: parsedData.rolePlayReply,
       feedback: {
         fluencyScore: parsedData.fluencyScore,

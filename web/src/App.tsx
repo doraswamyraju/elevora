@@ -53,6 +53,7 @@ export function App() {
     cost: number;
   } | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [coachLanguage, setCoachLanguage] = useState<'en' | 'te' | 'hi' | 'ta' | 'kn'>('te');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +79,7 @@ export function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userSpokenText: spokenText,
+          language: coachLanguage,
           apiKey: aiApiKey || undefined
         })
       });
@@ -693,6 +695,35 @@ export function App() {
                       onChange={e => setAiApiKey(e.target.value)}
                       className="w-full bg-[#080C16] border border-[#24304D] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#F39C12]"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-400 mb-1.5">
+                      Coach Language (సంభాషణ / వివరణ భాష)
+                    </label>
+                    <div className="grid grid-cols-5 gap-1.5 p-1 bg-[#080C16] border border-[#24304D] rounded-xl text-xs">
+                      {[
+                        { code: 'te', flag: '🇮🇳', label: 'Telugu', native: 'తెలుగు' },
+                        { code: 'en', flag: '🇬🇧', label: 'English', native: 'English' },
+                        { code: 'hi', flag: '🇮🇳', label: 'Hindi', native: 'हिंदी' },
+                        { code: 'ta', flag: '🇮🇳', label: 'Tamil', native: 'தமிழ்' },
+                        { code: 'kn', flag: '🇮🇳', label: 'Kannada', native: 'ಕನ್ನಡ' }
+                      ].map(lang => (
+                        <button
+                          key={lang.code}
+                          type="button"
+                          onClick={() => setCoachLanguage(lang.code as any)}
+                          className={`py-1.5 px-1 rounded-lg text-center transition flex flex-col items-center justify-center ${
+                            coachLanguage === lang.code
+                              ? 'bg-[#F39C12] text-[#080C16] font-bold shadow-md'
+                              : 'text-gray-300 hover:text-white hover:bg-slate-800/50'
+                          }`}
+                        >
+                          <span className="text-[11px] leading-tight font-bold">{lang.flag} {lang.label}</span>
+                          <span className={`text-[9px] ${coachLanguage === lang.code ? 'text-[#080C16]/80' : 'text-gray-400'}`}>{lang.native}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div>

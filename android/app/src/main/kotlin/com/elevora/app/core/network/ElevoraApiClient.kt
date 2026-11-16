@@ -81,6 +81,7 @@ object ElevoraApiClient {
     suspend fun sendSpeakingPractice(
         userSpokenText: String,
         targetScenario: String = "Module 1, Lesson 1: Professional Self-Introduction",
+        language: String = "en",
         apiKey: String? = null
     ): AiSpeakingEvaluation = withContext(Dispatchers.IO) {
         if (userSpokenText.isBlank()) {
@@ -109,6 +110,7 @@ object ElevoraApiClient {
                 val jsonBody = JSONObject().apply {
                     put("userSpokenText", userSpokenText)
                     put("scenarioContext", targetScenario)
+                    put("language", language)
                     if (!apiKey.isNullOrBlank()) {
                         put("apiKey", apiKey)
                     }
