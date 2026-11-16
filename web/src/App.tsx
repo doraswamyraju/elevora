@@ -53,7 +53,7 @@ export function App() {
     cost: number;
   } | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [coachLanguage, setCoachLanguage] = useState<'en' | 'te' | 'hi' | 'ta' | 'kn'>('te');
+  const [coachLanguage, setCoachLanguage] = useState<'auto' | 'en' | 'te' | 'hi' | 'ta' | 'kn'>('auto');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -701,8 +701,9 @@ export function App() {
                     <label className="block text-[11px] font-semibold text-gray-400 mb-1.5">
                       Coach Language (సంభాషణ / వివరణ భాష)
                     </label>
-                    <div className="grid grid-cols-5 gap-1.5 p-1 bg-[#080C16] border border-[#24304D] rounded-xl text-xs">
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 p-1 bg-[#080C16] border border-[#24304D] rounded-xl text-xs">
                       {[
+                        { code: 'auto', flag: '🌐', label: 'Auto Detect', native: 'ఆటో డిటెక్ట్' },
                         { code: 'te', flag: '🇮🇳', label: 'Telugu', native: 'తెలుగు' },
                         { code: 'en', flag: '🇬🇧', label: 'English', native: 'English' },
                         { code: 'hi', flag: '🇮🇳', label: 'Hindi', native: 'हिंदी' },

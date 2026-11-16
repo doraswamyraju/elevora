@@ -21,7 +21,7 @@ class ElevoraSpeechRecognizer(
     private val context: Context,
     private val onFinalResult: (String) -> Unit,
     private val onPartial: (String) -> Unit = {},
-    private val onError: (String) -> Unit = {},
+    private val onError: (String, Boolean) -> Unit = { _, _ -> },
     private val onListeningStateChanged: (Boolean) -> Unit = {}
 ) {
     private var speechRecognizer: SpeechRecognizer? = null
@@ -55,6 +55,7 @@ class ElevoraSpeechRecognizer(
                     }
 
                     override fun onError(error: Int) {
+                        val isTimeoutOrNoMatch = (error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT || error == SpeechRecognizer.ERROR_NO_MATCH)
                         val message = when (error) {
                             SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
                             SpeechRecognizer.ERROR_CLIENT -> "Client error"
@@ -69,7 +70,7 @@ class ElevoraSpeechRecognizer(
                         }
                         Log.w("ElevoraSpeech", message)
                         onListeningStateChanged(false)
-                        onError(message)
+                        onError(message, isTimeoutOrNoMatch)
                     }
 
                     override fun onResults(results: Bundle?) {
@@ -80,7 +81,7 @@ class ElevoraSpeechRecognizer(
                         if (recognizedText.isNotBlank()) {
                             onFinalResult(recognizedText)
                         } else {
-                            onError("No words detected. Please speak clearly into the microphone.")
+                            onError("No words detected. Please speak clearly into the microphone.", true)
                         }
                     }
 
@@ -97,7 +98,7 @@ class ElevoraSpeechRecognizer(
                 })
             }
         } else {
-            onError("Speech recognition not supported on this device.")
+            onError("Speech recognition not supported on this device.", false)
         }
     }
 
@@ -121,7 +122,7 @@ class ElevoraSpeechRecognizer(
             speechRecognizer?.startListening(intent)
         } catch (e: Exception) {
             Log.e("ElevoraSpeech", "Failed to start listening: ${e.message}")
-            onError(e.message ?: "Failed to start speech recognition")
+            onError(e.message ?: "Failed to start speech recognition", false)
         }
     }
 

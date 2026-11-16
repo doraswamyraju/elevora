@@ -334,38 +334,63 @@ app.post('/api/ai/practice-feedback', async (req: Request, res: Response) => {
       });
     }
 
-    // Regional language instructions (Telugu, Hindi, Tamil, Kannada, English)
-    const selectedLang = (language || 'en').toLowerCase().trim();
+    // Regional language instructions (Auto-detect by default, or specific override)
+    const reqLang = (language || 'auto').toLowerCase().trim();
     let languageInstruction = '';
 
-    if (selectedLang === 'te' || selectedLang === 'telugu') {
+    if (reqLang === 'auto' || reqLang === 'detect') {
+      languageInstruction = `
+LANGUAGE INSTRUCTION: AUTOMATIC DETECTION
+1. Analyze the language, script, and code-mixing of what the learner said ("${userSpokenText}").
+2. Detect whether the learner is speaking in Telugu (తెలుగు), Hindi (हिंदी), Tamil (தமிழ்), Kannada (ಕನ್ನಡ), English, or mixed (e.g. Telugu with English words).
+3. Set 'detectedLanguage' in the JSON response to one of: 'te', 'hi', 'ta', 'kn', 'en'.
+4. 'rolePlayReply': Respond in the SAME natural language the learner used.
+   - If Telugu or Telugu-English code-mix: respond conversationally in natural Telugu script (using standard corporate loanwords like 'team', 'project', 'meeting', 'operations' where appropriate).
+   - If Hindi: respond in natural conversational Hindi (Devanagari script).
+   - If Tamil: respond in natural conversational Tamil script.
+   - If Kannada: respond in natural conversational Kannada script.
+   - If English: respond in natural polished executive English.
+5. 'trainerObservation': Provide encouraging, actionable coaching guidance in the learner's detected language.
+6. 'improvedAlternative': Provide the executive, highly polished workplace English phrasing, followed by a brief translation or explanation in the learner's detected language in parentheses if non-English.
+7. 'isSessionConcluding': Set to true if the learner is saying goodbye, concluding, or wrapping up (e.g., "thank you, that's all", "bye", "conclude session", "see you tomorrow", "done for today"). Otherwise false.`;
+    } else if (reqLang === 'te' || reqLang === 'telugu') {
       languageInstruction = `
 COACHING LANGUAGE: TELUGU (తెలుగు)
-1. 'rolePlayReply': Respond naturally and conversationally in Telugu (incorporating common professional English workplace loanwords where natural in corporate offices, such as 'team', 'meeting', 'operations', 'project', etc.). Write in Telugu script.
-2. 'trainerObservation': Provide encouraging, actionable coaching guidance in Telugu script so the learner clearly understands how to improve their executive communication.
-3. 'improvedAlternative': Provide the executive, highly polished English phrasing, followed by a brief Telugu explanation in parentheses.`;
-    } else if (selectedLang === 'hi' || selectedLang === 'hindi') {
+1. 'detectedLanguage': 'te'
+2. 'rolePlayReply': Respond naturally and conversationally in Telugu (incorporating common professional English workplace loanwords where natural in corporate offices, such as 'team', 'meeting', 'operations', 'project', etc.). Write in Telugu script.
+3. 'trainerObservation': Provide encouraging, actionable coaching guidance in Telugu script so the learner clearly understands how to improve their executive communication.
+4. 'improvedAlternative': Provide the executive, highly polished English phrasing, followed by a brief Telugu explanation in parentheses.
+5. 'isSessionConcluding': boolean, true if learner is wrapping up.`;
+    } else if (reqLang === 'hi' || reqLang === 'hindi') {
       languageInstruction = `
 COACHING LANGUAGE: HINDI (हिंदी)
-1. 'rolePlayReply': Respond naturally and conversationally in Hindi (Devanagari script), using modern corporate conversational style.
-2. 'trainerObservation': Provide encouraging coaching feedback in Hindi script.
-3. 'improvedAlternative': Provide the polished executive English phrasing, followed by a brief Hindi explanation in parentheses.`;
-    } else if (selectedLang === 'ta' || selectedLang === 'tamil') {
+1. 'detectedLanguage': 'hi'
+2. 'rolePlayReply': Respond naturally and conversationally in Hindi (Devanagari script), using modern corporate conversational style.
+3. 'trainerObservation': Provide encouraging coaching feedback in Hindi script.
+4. 'improvedAlternative': Provide the polished executive English phrasing, followed by a brief Hindi explanation in parentheses.
+5. 'isSessionConcluding': boolean, true if learner is wrapping up.`;
+    } else if (reqLang === 'ta' || reqLang === 'tamil') {
       languageInstruction = `
 COACHING LANGUAGE: TAMIL (தமிழ்)
-1. 'rolePlayReply': Respond naturally and conversationally in Tamil script.
-2. 'trainerObservation': Provide encouraging coaching feedback in Tamil script.
-3. 'improvedAlternative': Provide the polished executive English phrasing, followed by a brief Tamil explanation in parentheses.`;
-    } else if (selectedLang === 'kn' || selectedLang === 'kannada') {
+1. 'detectedLanguage': 'ta'
+2. 'rolePlayReply': Respond naturally and conversationally in Tamil script.
+3. 'trainerObservation': Provide encouraging coaching feedback in Tamil script.
+4. 'improvedAlternative': Provide the polished executive English phrasing, followed by a brief Tamil explanation in parentheses.
+5. 'isSessionConcluding': boolean, true if learner is wrapping up.`;
+    } else if (reqLang === 'kn' || reqLang === 'kannada') {
       languageInstruction = `
 COACHING LANGUAGE: KANNADA (ಕನ್ನಡ)
-1. 'rolePlayReply': Respond naturally and conversationally in Kannada script.
-2. 'trainerObservation': Provide encouraging coaching feedback in Kannada script.
-3. 'improvedAlternative': Provide the polished executive English phrasing, followed by a brief Kannada explanation in parentheses.`;
+1. 'detectedLanguage': 'kn'
+2. 'rolePlayReply': Respond naturally and conversationally in Kannada script.
+3. 'trainerObservation': Provide encouraging coaching feedback in Kannada script.
+4. 'improvedAlternative': Provide the polished executive English phrasing, followed by a brief Kannada explanation in parentheses.
+5. 'isSessionConcluding': boolean, true if learner is wrapping up.`;
     } else {
       languageInstruction = `
 COACHING LANGUAGE: ENGLISH
-Converse in natural, polished executive English. Provide 'rolePlayReply', 'improvedAlternative', and 'trainerObservation' in English.`;
+1. 'detectedLanguage': 'en'
+2. Converse in natural, polished executive English. Provide 'rolePlayReply', 'improvedAlternative', and 'trainerObservation' in English.
+3. 'isSessionConcluding': boolean, true if learner is wrapping up.`;
     }
 
     // Call Google GenAI SDK with pedagogical and regional language prompt
@@ -390,6 +415,8 @@ Your task:
 
 Respond ONLY with a strictly formatted JSON object:
 {
+  "detectedLanguage": "te",
+  "isSessionConcluding": false,
   "rolePlayReply": "...",
   "fluencyScore": 4.2,
   "accuracyScore": 4.0,
@@ -407,7 +434,7 @@ Respond ONLY with a strictly formatted JSON object:
 
     for (const modelName of modelsToTry) {
       try {
-        console.log(`[AI Coach] Generating response with ${modelName} for language: ${selectedLang}...`);
+        console.log(`[AI Coach] Generating response with ${modelName} (requested lang: ${reqLang})...`);
         // Wrap model generation in a strict 8-second timeout per attempt to prevent gateway timeouts
         const modelPromise = ai.models.generateContent({
           model: modelName,
@@ -442,15 +469,21 @@ Respond ONLY with a strictly formatted JSON object:
     }
     const parsedData = JSON.parse(cleanedText);
 
-    if (!parsedData.rolePlayReply) {
+    const generatedReply = parsedData.rolePlayReply || parsedData.roleplayReply || "";
+    if (!generatedReply) {
       throw new Error("AI Coach did not generate a conversational response.");
     }
+
+    const detectedLang = parsedData.detectedLanguage || (reqLang === 'auto' ? 'en' : reqLang);
+    const isConcluding = Boolean(parsedData.isSessionConcluding);
 
     return res.json({
       success: true,
       isSimulated: false,
-      language: selectedLang,
-      rolePlayReply: parsedData.rolePlayReply,
+      language: detectedLang,
+      detectedLanguage: detectedLang,
+      isSessionConcluding: isConcluding,
+      rolePlayReply: generatedReply,
       feedback: {
         fluencyScore: parsedData.fluencyScore,
         accuracyScore: parsedData.accuracyScore,

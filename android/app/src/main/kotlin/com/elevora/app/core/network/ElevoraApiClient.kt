@@ -19,7 +19,9 @@ data class AiSpeakingEvaluation(
     val grammarTips: List<String> = emptyList(),
     val totalTokens: Int = 0,
     val isSuccess: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val detectedLanguage: String? = null,
+    val isSessionConcluding: Boolean = false
 )
 
 /**
@@ -85,7 +87,7 @@ object ElevoraApiClient {
     suspend fun sendSpeakingPractice(
         userSpokenText: String,
         targetScenario: String = "Module 1, Lesson 1: Professional Self-Introduction",
-        language: String = "en",
+        language: String = "auto",
         apiKey: String? = null
     ): AiSpeakingEvaluation = withContext(Dispatchers.IO) {
         if (userSpokenText.isBlank()) {
@@ -174,6 +176,9 @@ object ElevoraApiClient {
                     val telemetry = rootJson.optJSONObject("telemetry")
                     val tokens = telemetry?.optInt("totalTokens", 0) ?: 0
 
+                    val detectedLang = rootJson.optString("detectedLanguage", rootJson.optString("language", "en"))
+                    val isConcluding = rootJson.optBoolean("isSessionConcluding", false)
+
                     return@withContext AiSpeakingEvaluation(
                         rolePlayReply = reply,
                         fluencyScore = fluency,
@@ -184,7 +189,9 @@ object ElevoraApiClient {
                         grammarTips = tipsList,
                         totalTokens = tokens,
                         isSuccess = true,
-                        errorMessage = null
+                        errorMessage = null,
+                        detectedLanguage = detectedLang,
+                        isSessionConcluding = isConcluding
                     )
                 } else if (responseText.isNotBlank()) {
                     try {
